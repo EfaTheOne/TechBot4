@@ -3,16 +3,27 @@ Part List
 -https://www.adafruit.com/product/4311?srsltid=AfmBOopb0Z9bzDvCusqRwQuAI18eDbWa0XD_RDmqvqr7_hGu1QP7qzMz
 -https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
 Parts needed to be sourced:
+
 -IP5306 with 12C
+
 -1R0 Inductor
+
 -22µF Capacitor 2x
+
 -10µF Capacitor 3x
+
 -0.1µF Capacitor
+
 -1kΩ Resistor
+
 -JST-PH 2-Pin
+
 -Type-C Port
+
 -5.1kΩ Resistor 2x
+
 -AMS1117-3.3
+
 -Battery, 3.7v 1500mAh
 
 # What is it?
