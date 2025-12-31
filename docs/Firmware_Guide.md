@@ -474,7 +474,11 @@ Before updating:
 
 ## OTA Updates (Advanced)
 
-For wireless firmware updates, add OTA library:
+⚠️ **SECURITY WARNING**: OTA (Over-The-Air) updates allow wireless firmware installation, but **WITHOUT AUTHENTICATION, ANYONE ON YOUR NETWORK CAN TAKE CONTROL OF YOUR DEVICE**. An attacker on the same network could push malicious firmware, gaining complete control.
+
+**NEVER enable unauthenticated OTA on production or unattended devices.**
+
+For wireless firmware updates with proper security, add OTA library:
 
 ```cpp
 #include <ArduinoOTA.h>
@@ -483,6 +487,19 @@ void setup() {
   // ... existing code ...
   
   ArduinoOTA.setHostname("TechBot4");
+  
+  // CRITICAL: Set a strong password to prevent unauthorized access
+  ArduinoOTA.setPassword("YourStrongPasswordHere");  // REQUIRED for security
+  
+  // Optional: Add additional security callbacks
+  ArduinoOTA.onStart([]() {
+    Serial.println("OTA Update Starting...");
+  });
+  
+  ArduinoOTA.onError([](ota_error_t error) {
+    Serial.printf("OTA Error[%u]: ", error);
+  });
+  
   ArduinoOTA.begin();
 }
 
@@ -492,9 +509,18 @@ void loop() {
 }
 ```
 
+**Security Best Practices:**
+- Always use `ArduinoOTA.setPassword("strong_password")` 
+- Use unique, complex passwords (12+ characters)
+- Only enable OTA when actively updating
+- Disable OTA in production code
+- Use VPN or isolated network for OTA updates
+- Monitor for unauthorized OTA attempts
+
 Then update wirelessly via Arduino IDE:
 ```
 Tools → Port → TechBot4 at 192.168.x.x
+(You will be prompted for the password you set)
 ```
 
 ---

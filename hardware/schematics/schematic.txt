@@ -104,10 +104,10 @@ C6: 100nF decoupling capacitor near ESP32 VDD
 CP2102 (U4)
   Pin 1  (RI/CLK)   ── Not connected
   Pin 2  (GND)      ── GND
-  Pin 3  (D+)       ── USB D+ (with 27Ω series resistor)
-  Pin 4  (D-)       ── USB D- (with 27Ω series resistor)
-  Pin 5  (VDD)      ── +3.3V (with 100nF + 4.7µF capacitors)
-  Pin 6  (REGIN)    ── +5V from USB (with 100nF capacitor)
+  Pin 3  (D+)       ── USB D+ (with 27Ω series resistor R16)
+  Pin 4  (D-)       ── USB D- (with 27Ω series resistor R17)
+  Pin 5  (VDD)      ── +3.3V (with 100nF + 4.7µF capacitors C8, C9)
+  Pin 6  (REGIN)    ── +5V from USB; C12 100nF capacitor from REGIN to GND (local bypass)
   Pin 7  (VBUS)     ── +5V from USB (VBUS detect)
   Pin 8  (RST)      ── Not connected
   Pin 9  (NC)       ── Not connected
@@ -215,6 +215,7 @@ D1: 1N4148 flyback diode across buzzer (cathode to +)
 - C5-C7, C9: 100nF ceramic (decoupling)
 - C8: 4.7µF ceramic (CP2102 VDD)
 - C10, C11: 10µF electrolytic (auto-reset circuit)
+- C12: 100nF ceramic (CP2102 REGIN bypass - local to pin 6)
 
 ### Semiconductors
 - U1: TP4056 (LiPo charger IC)
@@ -240,4 +241,4 @@ D1: 1N4148 flyback diode across buzzer (cathode to +)
 3. Antenna area of ESP32 should extend over board edge for best performance
 4. Ground plane recommended on bottom layer
 5. Keep high-frequency traces short and direct
-6. Consider ESD protection on USB connector
+6. **ESD Protection**: USB connector ESD protection is NOT included in this basic design. For production use, add TVS diodes or ESD protection ICs (e.g., TPD2E001) on USB D+/D- lines to prevent electrostatic discharge damage. This is optional for prototypes but recommended for any device that will be frequently connected/disconnected.

@@ -47,7 +47,7 @@ This BOM lists all components required to build one TechBot4 ESP32 Marauder devi
 |-----|-----|-------|------|---------|---------|------------|
 | C1, C2 | 2 | 10µF | Ceramic | 16V | 0805 | $0.04 |
 | C3, C4 | 2 | 22µF | Electrolytic | 16V | 6.3x5.4mm | $0.10 |
-| C5-C7, C9 | 4 | 100nF (0.1µF) | Ceramic | 50V | 0805 | $0.04 |
+| C5-C7, C9, C12 | 5 | 100nF (0.1µF) | Ceramic | 50V | 0805 | $0.05 |
 | C8 | 1 | 4.7µF | Ceramic | 16V | 0805 | $0.02 |
 | C10, C11 | 2 | 10µF | Electrolytic | 16V | 5x5mm | $0.10 |
 

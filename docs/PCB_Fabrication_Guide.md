@@ -216,7 +216,7 @@ zip -r ../TechBot4_Marauder_Gerbers.zip *
    | PCB Thickness | 1.6mm | Standard |
    | PCB Color | Black | Recommended |
    | Silkscreen | White | Standard |
-   | Surface Finish | HASL(with lead) | Cheapest |
+   | Surface Finish | LeadFree HASL | Standard (RoHS compliant) |
    | Outer Copper Weight | 1 oz | Standard |
    | Gold Fingers | No | Not needed |
    | Confirm Production | No | Save $1 |
@@ -225,9 +225,14 @@ zip -r ../TechBot4_Marauder_Gerbers.zip *
    | Remove Order Number | No | Save $1.50 |
 
 6. **Optional Upgrades:**
-   - Surface Finish: ENIG (better for fine-pitch, +$15)
+   - Surface Finish: ENIG (better for fine-pitch and long-term reliability, +$15)
    - PCB Color: Blue/Red/Green (personal preference, +$0)
    - Remove Order Number: Yes (cleaner look, +$1.50)
+   
+   **Note on Surface Finish:**
+   - **LeadFree HASL**: Standard, RoHS compliant, good for most applications
+   - **HASL with lead**: Slightly cheaper but not RoHS compliant (rarely offered now)
+   - **ENIG**: Gold finish, best for fine-pitch components and shelf life
 
 7. **Review Total Cost:**
    - PCB: ~$2 (5 pieces)

