@@ -1,0 +1,398 @@
+# PCB Layout Guide for TechBot4 ESP32 Marauder
+
+## Board Dimensions and Shape
+
+```
+Physical Dimensions: 80mm (width) x 150mm (height)
+Board Thickness: 1.6mm
+Rounded corners: 3mm radius
+Mounting holes: 4x 3mm diameter at corners (5mm from edges)
+```
+
+## Layer Stack-up
+
+```
+Top Layer (Component Side):
+  - Signal routing
+  - Component pads
+  - Copper pour (3.3V)
+
+Bottom Layer (Ground Side):
+  - Ground plane (GND)
+  - Signal routing (minimal)
+  - Power traces
+```
+
+## Component Placement Layout
+
+### Front View (Top Side) - Component Placement
+```
+┌─────────────────────────────────────┐ 80mm
+│  ┌────────────────────┐             │
+│  │   OLED Display     │             │ ← Display at top
+│  │    128x64 SSD1306  │             │   (centered)
+│  └────────────────────┘             │
+│                                     │
+│  ┌─────────────────┐                │
+│  │  ESP32-WROOM-32 │                │ ← ESP32 module
+│  │                 │                │   (center-left)
+│  └─────────────────┘  [LED1]        │
+│                                     │
+│  [SW2]  [SW3]                       │ ← Control buttons
+│         SELECT  UP                  │   (center area)
+│                                     │
+│  [SW4]  [SW6]                       │
+│         DOWN   BACK                 │
+│                                     │
+│  ┌──────┐  [BZ1]                    │ ← USB-C connector
+│  │ USB-C│   Buzzer                  │   and buzzer
+│  └──────┘                           │   (bottom center)
+│                                     │
+│  [TP4056] [AMS1117] [CP2102]        │ ← Power and comm ICs
+│   [LED2]   [LED3]                   │   (bottom, left)
+│                      [SW5]          │ ← Power switch
+│                      POWER          │   (bottom right)
+└─────────────────────────────────────┘
+              150mm
+```
+
+## Detailed Component Coordinates
+
+### From Top-Left Corner (0,0)
+
+#### Display Section (Top)
+```
+OLED Display (D1): X=40mm, Y=15mm (centered at top)
+  - Orientation: Horizontal
+  - Clearance: 5mm from top edge
+  - Connector on bottom of display module
+```
+
+#### ESP32 Section (Upper-Middle)
+```
+ESP32-WROOM-32 (U3): X=25mm, Y=45mm
+  - Orientation: Vertical, antenna towards board edge
+  - Antenna keepout area: 15mm x 5mm (no copper pour)
+  - RF trace to antenna connector (if used)
+  
+Status LED (LED1): X=65mm, Y=55mm
+  - Red LED, 0805 package
+  - Silkscreen label: "STATUS"
+```
+
+#### Button Section (Middle)
+```
+Button Layout (4-button cluster):
+  SELECT (SW2): X=25mm, Y=75mm
+  UP (SW3):     X=45mm, Y=75mm
+  DOWN (SW4):   X=25mm, Y=95mm
+  BACK (SW6):   X=45mm, Y=95mm
+  
+  - Buttons in 2x2 grid pattern
+  - 20mm spacing between columns
+  - 20mm spacing between rows
+  - Silkscreen labels for each button
+```
+
+#### USB and Power Section (Bottom)
+```
+USB-C Connector (J1): X=40mm, Y=130mm (centered)
+  - Mid-mount USB-C receptacle
+  - Overhang allowed at board edge
+  - ESD protection components nearby
+  
+Buzzer (BZ1): X=60mm, Y=125mm
+  - 12mm diameter passive buzzer
+  - Silkscreen polarity marking
+  
+Power Switch (SW5): X=70mm, Y=135mm
+  - Slide switch, horizontal orientation
+  - Silkscreen: "ON" and "OFF" positions
+```
+
+#### Power Management Section (Bottom-Left)
+```
+TP4056 (U1): X=15mm, Y=120mm
+  - SOT23-6 package
+  - Decoupling caps C1, C2 within 2mm
+  - Battery connector nearby
+  
+Battery Connector (BAT1): X=10mm, Y=135mm
+  - JST 2-pin connector
+  - Polarity protection diode
+  - Silkscreen polarity marking
+  
+AMS1117-3.3 (U2): X=15mm, Y=105mm
+  - SOT-223 package
+  - Large thermal pad connected to ground
+  - Input/output caps within 5mm
+  
+Charging LEDs:
+  LED2 (Standby): X=25mm, Y=125mm (Yellow)
+  LED3 (Charging): X=25mm, Y=120mm (Red)
+  - Silkscreen labels
+```
+
+#### Communication Section (Bottom-Center)
+```
+CP2102 (U4): X=40mm, Y=110mm
+  - QFN-28 package
+  - USB data traces as short as possible
+  - Decoupling caps within 2mm
+  - Auto-reset components nearby
+```
+
+## Routing Guidelines
+
+### Critical Traces
+
+#### Power Traces
+```
+Battery+ to VIN: 1.0mm width (handles up to 2A)
+3.3V Rail: 0.5mm width
+GND connections: Use ground plane with vias
+USB VBUS: 0.8mm width
+```
+
+#### Signal Traces
+```
+ESP32 GPIO: 0.25mm width (default)
+I2C (SDA/SCL): 0.3mm width, with pull-ups
+UART (TX/RX): 0.3mm width
+Button connections: 0.25mm width
+LED connections: 0.25mm width
+```
+
+#### High-Speed Traces
+```
+USB D+ and D-:
+  - 0.4mm width
+  - Differential pair routing (90Ω impedance)
+  - Equal length matching (within 5mm)
+  - Keep away from switching power supplies
+  - No vias if possible
+  
+ESP32 Crystal (if external):
+  - Keep traces short (<10mm)
+  - Ground guard traces recommended
+```
+
+### Ground Plane
+```
+Bottom layer: Solid ground plane
+  - Remove only for signal traces
+  - Thermal relief for through-hole pads
+  - No plane splits under high-frequency components
+  
+Top layer: 3.3V pour in unused areas
+  - At least 0.5mm clearance from ground
+  - Stitching vias every 10mm
+```
+
+### Via Specifications
+```
+Standard Via: 0.6mm drill, 1.0mm pad
+Power Via: 0.8mm drill, 1.2mm pad
+Thermal Via: 0.3mm drill, 0.6mm pad (under ICs)
+
+Via placement:
+  - Ground stitching vias around board perimeter
+  - Multiple vias for power connections
+  - Thermal vias under voltage regulators
+```
+
+## Design Rules
+
+### Minimum Specifications
+```
+Trace Width: 0.15mm (6 mil)
+Trace Spacing: 0.15mm (6 mil)
+Via Drill: 0.3mm (12 mil)
+Via Pad: 0.6mm (24 mil)
+Minimum Hole: 0.3mm
+Text Height: 1.0mm
+```
+
+### Recommended Specifications
+```
+Trace Width: 0.25mm (10 mil) minimum
+Trace Spacing: 0.25mm (10 mil) minimum
+Via Drill: 0.6mm (24 mil)
+Via Pad: 1.0mm (40 mil)
+Text Height: 1.5mm for labels
+```
+
+## Silkscreen Design
+
+### Front Silkscreen (White)
+```
+- Project name: "TechBot4 Marauder" at top
+- Version number: "v1.0" near bottom
+- Component reference designators
+- Button labels: "SELECT", "UP", "DOWN", "BACK"
+- LED labels: "STATUS", "CHARGE", "READY"
+- Switch positions: "ON/OFF"
+- Polarity markings for battery, LEDs
+- Warning text: "Educational Use Only"
+- Pin 1 indicators for ICs
+```
+
+### Back Silkscreen
+```
+- Copyright notice
+- GitHub repository URL
+- Manufacturing specifications
+- PCB version and date
+- Assembly notes
+```
+
+## Copper Pour Zones
+
+### Top Layer (3.3V)
+```
+Priority: 2
+Clearance: 0.5mm
+Minimum Width: 0.5mm
+Thermal relief: 0.5mm spoke width
+Orphan removal: Yes
+```
+
+### Bottom Layer (GND)
+```
+Priority: 1
+Clearance: 0.5mm
+Minimum Width: 0.5mm
+Thermal relief: 0.5mm spoke width
+Orphan removal: No (keep islands)
+```
+
+## Keep-Out Zones
+
+### RF Keep-Out (ESP32 Antenna Area)
+```
+Location: Around ESP32 antenna section
+Size: 15mm x 15mm zone
+Restrictions:
+  - No copper pour on top or bottom layers
+  - No traces crossing antenna area
+  - PCB edge should be clear in antenna direction
+  - At least 5mm clearance to any metal
+```
+
+### USB Connector Keep-Out
+```
+Location: Around USB-C connector
+Size: 10mm x 10mm zone
+Restrictions:
+  - No components on back side
+  - Structural support recommended
+```
+
+## Mounting and Mechanical
+
+### Mounting Holes
+```
+Position (from corner):
+  Hole 1: X=5mm,  Y=5mm   (top-left)
+  Hole 2: X=75mm, Y=5mm   (top-right)
+  Hole 3: X=5mm,  Y=145mm (bottom-left)
+  Hole 4: X=75mm, Y=145mm (bottom-right)
+
+Specification:
+  Drill: 3.0mm
+  Pad: 6.0mm
+  Connected to: GND
+  Clearance: No solder mask
+```
+
+### Board Edge Clearance
+```
+Component to edge: Minimum 3mm
+Copper to edge: Minimum 0.5mm
+```
+
+## Test Points
+
+### Essential Test Points (Top Side)
+```
+TP1: +3.3V power rail
+TP2: GND
+TP3: Battery voltage (VIN)
+TP4: USB VBUS (+5V)
+TP5: ESP32 EN (enable)
+TP6: ESP32 IO0 (boot mode)
+TP7: I2C SDA
+TP8: I2C SCL
+
+Specification:
+  - 1.0mm diameter pad
+  - No solder mask
+  - Silkscreen label
+```
+
+## Manufacturing Notes
+
+### PCB Fabrication Requirements
+```
+Submit to manufacturer:
+  - Gerber files (RS-274X format)
+  - Drill files (Excellon format)
+  - Board outline (GKO file)
+  - Pick and place file (CSV)
+  - Bill of Materials (CSV/Excel)
+  
+Color options:
+  - Solder Mask: Black (recommended) or Blue
+  - Silkscreen: White
+  - Surface Finish: ENIG (best) or HASL
+```
+
+### Design for Assembly (DFA)
+```
+- All SMD components on top side
+- Through-hole components (buttons, connectors) hand-solderable
+- Fiducial marks for automated assembly (3x 1mm circles)
+- Panel design: V-groove or tab routing
+- Stencil thickness: 0.12mm for fine-pitch components
+```
+
+## Assembly Priority Order
+
+### Bottom Side (if any components)
+```
+1. Place and solder SMD components
+2. Reflow in oven or hot air
+```
+
+### Top Side
+```
+1. Apply solder paste (stencil)
+2. Place SMD components (tweezers/pick-and-place)
+   - ICs first (U1, U2, U3, U4)
+   - Passive components (resistors, capacitors)
+   - LEDs (mind polarity)
+3. Reflow solder
+4. Inspect and clean
+5. Hand solder through-hole components
+   - USB connector
+   - Buttons
+   - Battery connector
+   - Power switch
+   - Buzzer
+   - Display (use socket headers)
+```
+
+## Testing Points After Assembly
+
+```
+1. Visual inspection (no bridges, all components placed)
+2. Continuity test (no shorts on power rails)
+3. Power test (apply 5V via USB, check 3.3V output)
+4. LED test (charging circuit)
+5. USB connection test (computer recognizes CP2102)
+6. ESP32 programming test (upload blink sketch)
+7. Display test (I2C communication)
+8. Button test (read GPIO states)
+9. Battery charging test
+10. Full firmware test
+```

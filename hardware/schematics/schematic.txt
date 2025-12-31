@@ -1,0 +1,243 @@
+# TechBot4 ESP32 Marauder - Schematic Design
+
+## Circuit Description
+
+This schematic describes the complete circuit for the ESP32 Marauder pen testing device.
+
+## Power Supply Section
+
+### USB Power Input
+```
+USB-C Connector (J1)
+  Pin 1 (VBUS) ──────┬──── +5V Rail
+  Pin 2 (D-)         │
+  Pin 3 (D+)         │     TP4056 LiPo Charger (U1)
+  Pin 4 (GND)  ──────┼──── GND
+                     │
+                     └──── TP4056.VCC (Pin 1)
+```
+
+### Battery Charging Circuit
+```
+TP4056 (U1) - LiPo Battery Charger
+  Pin 1 (VCC)    ── +5V from USB
+  Pin 2 (GND)    ── GND
+  Pin 3 (BAT+)   ──┬── Battery Positive (3.7V LiPo)
+  Pin 4 (BAT-)   ──┼── Battery Negative
+  Pin 5 (STDBY)  ──┼── LED2 (Yellow) - Standby indicator
+  Pin 6 (CHRG)   ──┼── LED3 (Red) - Charging indicator
+  Pin 7 (PROG)   ──┴── 1.2kΩ to GND (1A charging current)
+  Pin 8 (CE)     ── VCC (Chip Enable)
+
+C1: 10µF ceramic capacitor between VCC and GND
+C2: 10µF ceramic capacitor between BAT+ and GND
+```
+
+### Power Switch and Voltage Regulation
+```
+Power Switch (SW5)
+  Battery+ ──── SW5 ──── VIN (switched battery voltage)
+
+AMS1117-3.3 (U2) - 3.3V Voltage Regulator
+  Pin 1 (GND)  ── GND
+  Pin 2 (VOUT) ── +3.3V Rail
+  Pin 3 (VIN)  ── VIN (3.7-4.2V from battery)
+
+C3: 22µF electrolytic capacitor on VIN
+C4: 22µF electrolytic capacitor on 3.3V output
+C5: 100nF ceramic capacitor on 3.3V output
+```
+
+## ESP32-WROOM-32 Module Section
+
+### ESP32 Main Connections
+```
+ESP32-WROOM-32 (U3)
+  Pin 1  (GND)        ── GND
+  Pin 2  (3V3)        ── +3.3V (with 100nF decoupling capacitor)
+  Pin 3  (EN)         ── +3.3V through 10kΩ pull-up
+                         └── RESET button (SW1) to GND
+  Pin 4  (SENSOR_VP)  ── Not connected
+  Pin 5  (SENSOR_VN)  ── Not connected
+  Pin 6  (IO34)       ── Button SELECT (SW2) with 10kΩ pull-up
+  Pin 7  (IO35)       ── Button UP (SW3) with 10kΩ pull-up
+  Pin 8  (IO32)       ── Button DOWN (SW4) with 10kΩ pull-up
+  Pin 9  (IO33)       ── Button BACK (SW6) with 10kΩ pull-up
+  Pin 10 (IO25)       ── Buzzer (BZ1) through NPN transistor
+  Pin 11 (IO26)       ── Not connected
+  Pin 12 (IO27)       ── Not connected
+  Pin 13 (IO14)       ── Not connected
+  Pin 14 (IO12)       ── Not connected
+  Pin 15 (GND)        ── GND
+  Pin 16 (IO13)       ── Not connected
+  Pin 17 (SHD/SD2)    ── Not connected
+  Pin 18 (SWP/SD3)    ── Not connected
+  Pin 19 (SCS/CMD)    ── Not connected
+  Pin 20 (SCK/CLK)    ── Not connected
+  Pin 21 (SDO/SD0)    ── Not connected
+  Pin 22 (SDI/SD1)    ── Not connected
+  Pin 23 (IO15)       ── Not connected
+  Pin 24 (IO2)        ── Status LED (LED1) with 330Ω resistor
+  Pin 25 (IO0)        ── BOOT button to GND (10kΩ pull-up)
+  Pin 26 (IO4)        ── Not connected
+  Pin 27 (IO16)       ── Not connected
+  Pin 28 (IO17)       ── Not connected
+  Pin 29 (IO5)        ── Not connected
+  Pin 30 (IO18)       ── Not connected
+  Pin 31 (IO19)       ── Not connected
+  Pin 32 (NC)         ── Not connected
+  Pin 33 (IO21)       ── I2C SDA (OLED display)
+  Pin 34 (RXD0)       ── CP2102 TXD (UART)
+  Pin 35 (TXD0)       ── CP2102 RXD (UART)
+  Pin 36 (IO22)       ── I2C SCL (OLED display)
+  Pin 37 (IO23)       ── Not connected
+  Pin 38 (GND)        ── GND
+  Pin 39 (GND)        ── GND (antenna pad)
+
+C6: 100nF decoupling capacitor near ESP32 VDD
+```
+
+## USB to UART Bridge Section
+
+### CP2102 USB-UART Converter
+```
+CP2102 (U4)
+  Pin 1  (RI/CLK)   ── Not connected
+  Pin 2  (GND)      ── GND
+  Pin 3  (D+)       ── USB D+ (with 27Ω series resistor)
+  Pin 4  (D-)       ── USB D- (with 27Ω series resistor)
+  Pin 5  (VDD)      ── +3.3V (with 100nF + 4.7µF capacitors)
+  Pin 6  (REGIN)    ── +5V from USB (with 100nF capacitor)
+  Pin 7  (VBUS)     ── +5V from USB (VBUS detect)
+  Pin 8  (RST)      ── Not connected
+  Pin 9  (NC)       ── Not connected
+  Pin 10 (NC)       ── Not connected
+  Pin 11 (SUSPEND)  ── Not connected
+  Pin 12 (CHREN)    ── Not connected
+  Pin 13 (CHR1)     ── Not connected
+  Pin 14 (CHR0)     ── Not connected
+  Pin 15 (GPIO.3)   ── Not connected
+  Pin 16 (GPIO.2)   ── Not connected
+  Pin 17 (GPIO.1)   ── Not connected
+  Pin 18 (GPIO.0)   ── Not connected
+  Pin 19 (NC)       ── Not connected
+  Pin 20 (TXD)      ── ESP32 RXD0 (Pin 34)
+  Pin 21 (RXD)      ── ESP32 TXD0 (Pin 35)
+  Pin 22 (RTS)      ── ESP32 EN (through RC circuit)
+  Pin 23 (CTS)      ── GND
+  Pin 24 (DSR)      ── Not connected
+  Pin 25 (DTR)      ── ESP32 IO0 (through RC circuit)
+  Pin 26 (DCD)      ── Not connected
+  Pin 27 (NC)       ── Not connected
+  Pin 28 (GND)      ── GND
+
+Auto-reset circuit:
+  CP2102.DTR ── 10µF ── ESP32.IO0
+  CP2102.RTS ── 10µF ── ESP32.EN
+  ESP32.IO0  ── 10kΩ ── +3.3V (pull-up)
+  ESP32.EN   ── 10kΩ ── +3.3V (pull-up)
+```
+
+## Display Section
+
+### OLED Display (I2C)
+```
+SSD1306 128x64 OLED Display (D1)
+  Pin 1 (GND)  ── GND
+  Pin 2 (VDD)  ── +3.3V
+  Pin 3 (SCK)  ── ESP32 IO22 (I2C SCL) with 4.7kΩ pull-up
+  Pin 4 (SDA)  ── ESP32 IO21 (I2C SDA) with 4.7kΩ pull-up
+
+R1: 4.7kΩ pull-up resistor on SDA
+R2: 4.7kΩ pull-up resistor on SCL
+C7: 100nF decoupling capacitor for display
+```
+
+## User Interface Section
+
+### Buttons
+```
+SW1 (RESET)  - Tactile switch: ESP32.EN to GND
+SW2 (SELECT) - Tactile switch: ESP32.IO34 to GND (10kΩ pull-up)
+SW3 (UP)     - Tactile switch: ESP32.IO35 to GND (10kΩ pull-up)
+SW4 (DOWN)   - Tactile switch: ESP32.IO32 to GND (10kΩ pull-up)
+SW5 (POWER)  - Slide switch: Battery+ to VIN
+SW6 (BACK)   - Tactile switch: ESP32.IO33 to GND (10kΩ pull-up)
+
+All tactile buttons: 6mm x 6mm THT or SMD
+```
+
+### Status LED
+```
+LED1 (Status LED)
+  Anode  ── ESP32.IO2
+  Cathode ── 330Ω (R3) ── GND
+  
+LED2 (Standby - Yellow)
+  Anode  ── TP4056.STDBY
+  Cathode ── 1kΩ (R4) ── GND
+  
+LED3 (Charging - Red)
+  Anode  ── TP4056.CHRG
+  Cathode ── 1kΩ (R5) ── GND
+
+LEDs: 0805 SMD or 3mm THT
+```
+
+### Buzzer Circuit
+```
+BZ1 (Passive Buzzer)
+  Positive ── VIN (3.7-4.2V)
+  Negative ── Collector of Q1 (2N3904 NPN transistor)
+
+Q1 (2N3904 or equivalent)
+  Base     ── 1kΩ (R6) ── ESP32.IO25
+  Collector ── BZ1 negative
+  Emitter   ── GND
+
+D1: 1N4148 flyback diode across buzzer (cathode to +)
+```
+
+## Component Summary
+
+### Resistors
+- R1, R2: 4.7kΩ (I2C pull-ups)
+- R3: 330Ω (LED current limiting)
+- R4, R5: 1kΩ (LED current limiting)
+- R6: 1kΩ (transistor base)
+- R7-R14: 10kΩ (button pull-ups and ESP32 pull-ups)
+- R15: 1.2kΩ (TP4056 charge current programming)
+- R16, R17: 27Ω (USB data line series resistors)
+
+### Capacitors
+- C1, C2: 10µF ceramic (TP4056 filtering)
+- C3, C4: 22µF electrolytic (regulator filtering)
+- C5-C7, C9: 100nF ceramic (decoupling)
+- C8: 4.7µF ceramic (CP2102 VDD)
+- C10, C11: 10µF electrolytic (auto-reset circuit)
+
+### Semiconductors
+- U1: TP4056 (LiPo charger IC)
+- U2: AMS1117-3.3 (voltage regulator)
+- U3: ESP32-WROOM-32 (main MCU)
+- U4: CP2102 (USB-UART bridge)
+- Q1: 2N3904 NPN transistor
+- D1: 1N4148 diode (flyback protection)
+- LED1-LED3: LEDs
+
+### Connectors and Switches
+- J1: USB-C connector
+- SW1-SW4, SW6: 6x6mm tactile switches
+- SW5: Slide switch (power)
+- BZ1: Passive buzzer (5V, 12mm)
+- D1: 0.96" I2C OLED display (128x64)
+- BAT1: JST 2-pin connector for LiPo battery
+
+## Notes
+
+1. All ICs should have decoupling capacitors placed as close as possible to VDD pins
+2. Keep USB data traces (D+ and D-) equal length and route as differential pair
+3. Antenna area of ESP32 should extend over board edge for best performance
+4. Ground plane recommended on bottom layer
+5. Keep high-frequency traces short and direct
+6. Consider ESD protection on USB connector
