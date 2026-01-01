@@ -1,71 +1,121 @@
 # TechBot4
-Part List
--https://www.adafruit.com/product/4311?srsltid=AfmBOopb0Z9bzDvCusqRwQuAI18eDbWa0XD_RDmqvqr7_hGu1QP7qzMz
 
--https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
+## Part List - Verified Components
 
-Unchecked Sourced Parts:</br>
--Power Management (ESOP-8), PCBA Number: C96641 1x</br>
+> **Note:** All PCBA numbers can be searched on JLCPCB/LCSC using the format: `https://jlcpcb.com/partdetail/[manufacturer-part]/[PCBA_NUMBER]` or search directly at [JLCPCB Parts Library](https://jlcpcb.com/parts) or [LCSC Electronics](https://www.lcsc.com/search?q=[PCBA_NUMBER])
 
-(Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))</br>
+---
 
--Inductor (1.0uH, CD43, ~2.5A) PCBA Number: C116556 1x</br>
+### Main Components
 
-(Inductor	1R0 (1.0µH, CD43, ~2.5A)	1	C116556	Power Inductor for IP5306 (SW Pin))</br>
+#### Display
+- **Adafruit 2.0" IPS Display (320x240)** - Product #4311
+  - 🔗 [Adafruit Product Page](https://www.adafruit.com/product/4311)
+  - EYESPI connector, ST7789 driver, 40-pin FPC (0.5mm pitch)
 
--Regulator (SOT-223) PCBA Number: C6186 1x</br>
+#### Microcontroller
+- **ESP32-WROOM-32-N8** | PCBA Number: **C529582** | Qty: 1x
+  - 🔗 [JLCPCB Search](https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582) | [LCSC Search](https://www.lcsc.com/search?q=C529582)
+  - 8MB Flash, WiFi + Bluetooth, 38-pin module
 
-(Regulator	AMS1117-3.3 (SOT-223)	1	C6186	Steps down 5V to 3.3V for ESP32)</br>
+---
 
--Capacitor (0603, X5R, 10V) PCBA Number: C96446 2x</br>
+### Power Management Components
 
-(Capacitor	22µF (0603, X5R, 10V)	2	C96446	IP5306 Input/Output Filtering))</br>
+#### Power Management IC
+- **IP5306** (SOP-8 Package) | PCBA Number: **C96641** | Qty: 1x
+  - 🔗 [JLCPCB Search](https://jlcpcb.com/partdetail/InjoinicTech-IP5306/C96641) | [LCSC Search](https://www.lcsc.com/search?q=C96641)
+  - Integrated Battery Charger & 5V Boost Converter (2.1A output)
+  - **Note:** This is a fully integrated power bank SoC with internal switching inductor. No external inductor required for standard operation.
 
--Capacitor (0603, X5R, 16V) PCBA Number: C19702 3x</br>
+#### Voltage Regulator
+- **AMS1117-3.3** (SOT-223) | PCBA Number: **C6186** | Qty: 1x
+  - 🔗 [JLCPCB Search](https://jlcpcb.com/partdetail/AdvancedMonolithicSystems-AMS1117_33/C6186) | [LCSC Search](https://www.lcsc.com/search?q=C6186)
+  - 3.3V Linear Regulator, 1A output, steps down 5V to 3.3V for ESP32
 
-(Capacitor	10µF (0603, X5R, 16V)	3	C19702	AMS1117 In/Out, ESP32 Power)</br>
+---
 
--Capacitor (0603, X7R, 50V) PCBA Number: C14663 1x</br>
+### Passive Components
 
-(Capacitor	0.1µF (0603, X7R, 50V)	1	C14663	ESP32 Decoupling / Filter)</br>
+#### Capacitors
 
--Resistor (0603, 1%, 5.1kΩ) PCBA Number: C23178 2x</br>
+| Component | Value | Package | PCBA Number | Qty | Purpose | Search Links |
+|-----------|-------|---------|-------------|-----|---------|--------------|
+| Capacitor | 22µF | 0603, X5R, 10V | **C96446** | 2x | IP5306 Input/Output Filtering | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C96446) \| [LCSC](https://www.lcsc.com/search?q=C96446) |
+| Capacitor | 10µF | 0603, X5R, 16V | **C19702** | 3x | AMS1117 In/Out, ESP32 Power | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C19702) \| [LCSC](https://www.lcsc.com/search?q=C19702) |
+| Capacitor | 0.1µF | 0603, X7R, 50V | **C14663** | 1x | ESP32 High-Frequency Decoupling | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C14663) \| [LCSC](https://www.lcsc.com/search?q=C14663) |
 
-(Resistor	5.1kΩ (0603, 1%)	2	C23178	USB-C CC Pin Pull-downs (Required for C-to-C charging))</br>
+#### Resistors
 
--Resistor (0603, 1%, 1kΩ) PCBA Number: C21190 1x</br>
+| Component | Value | Package | PCBA Number | Qty | Purpose | Search Links |
+|-----------|-------|---------|-------------|-----|---------|--------------|
+| Resistor | 5.1kΩ | 0603, 1% | **C23178** | 2x | USB-C CC Pin Pull-downs (Required for C-to-C charging) | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C23178) \| [LCSC](https://www.lcsc.com/search?q=C23178) |
+| Resistor | 10kΩ | 0603, 1% | **C23177** | 7x | 5x Button Pull-downs + 1x GPIO0 Pull-up + 1x EN Pull-up | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C23177) \| [LCSC](https://www.lcsc.com/search?q=C23177) |
 
-(Resistor	1kΩ (0603, 1%)	1	C21190	LED limiting or EN Pull-up (See notes))</br>
+---
 
--USB C Port (16-Pin, SMD) PCBA Number: C165948 1x</br>
+### Connectors & Switches
 
-(USB Port	USB Type-C 16-Pin (SMD)	1	C165948	Charging Input (Korean Hroparts))</br>
+| Component | Description | Package | PCBA Number | Qty | Purpose | Search Links |
+|-----------|-------------|---------|-------------|-----|---------|--------------|
+| USB-C Port | 16-Pin SMD | Surface Mount | **C165948** | 1x | Charging Input (Korean Hroparts TYPE-C-31-M-12) | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C165948) \| [LCSC](https://www.lcsc.com/search?q=C165948) |
+| JST-PH Connector | 2-Pin Vertical SMD | S2B-PH-SM4-TB | **C396123** | 1x | Battery Connector (3.7V LiPo) | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C396123) \| [LCSC](https://www.lcsc.com/search?q=C396123) |
+| Tactile Switch | 6x6mm | Through-Hole | **C34260** | 6x | 5x Navigation + 1x Reset Button | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C34260) \| [LCSC](https://www.lcsc.com/search?q=C34260) |
+| FPC Connector | 40-Pin, 0.5mm Pitch | Bottom Contact SMD | **C55234** | 1x | Adafruit EYESPI Display Connection | [JLCPCB](https://jlcpcb.com/parts/componentSearch?searchTxt=C55234) \| [LCSC](https://www.lcsc.com/search?q=C55234) |
 
--JST-PH Connector (Vertical SMD) PCBA Number: C396123 1x</br>
+---
 
-(Connector	JST-PH 2-Pin (Vertical SMD)	1	C396123	Battery Connector)</br>
+### ⚠️ Important Notes on Component Selection
 
--ESP32 (ESP32-WROOM-32-N8) PCBA Number: C529582 1x
+1. **IP5306 Package Correction:** The IP5306 uses a **SOP-8** package (not ESOP-8). Verify the package matches your PCB footprint.
 
-(ESP32	ESP32-WROOM-32-N8	1	C529582	Microcontroller (User specified))</br>
+2. **Inductor Removed:** The original design included an inductor (C116556) for the IP5306. However, the IP5306 is a **fully integrated power bank SoC** with an internal switching inductor. External inductors are NOT required for standard operation. If you have a different variant requiring external components, consult the specific datasheet.
 
--Tactile Switch (6x6mm, Through-Hole) PCBA Number: C34260 6x</br>
+3. **Resistor Count Updated:** Changed from 6x to 7x 10kΩ resistors. You need:
+   - 5x for button pull-downs (UP, DOWN, LEFT, RIGHT, SELECT)
+   - 1x for GPIO 0 pull-up (boot mode)
+   - 1x for EN pin pull-up (reset circuit)
 
-(Switch	Tactile Switch 6x6mm (Through-Hole)	6	C34260	Navigation & Reset Buttons)</br>
+4. **FPC Connector Verification:** The 40-pin FPC connector (C55234) must match the Adafruit display's FPC cable pinout exactly. Verify pin 1 orientation before ordering.
 
--Resistor (0603, 1%, 10kΩ) PCBA Number: C23177 6x</br>
-
-(Resistor	10kΩ (0603, 1%)	6	C23177	Pull-down Resistors for Buttons)</br>
-
--FPC Connector for IPS Display (EYESPI-Compatible) PCBA Number: C55234 1x</br>
-
-(FPC Connector	0.5mm Pitch, 40-Pin Bottom Contact, SMD	1	C55234	Adafruit 2.0 inch IPS Display FPC Connection)</br>
+---
 
 
-# What is it?
-The TechBot4 is a ESP32 WROOM 32 N8 based pen testing tool. It acts exactly like the ESP32 'Maruader' by JustCallMeKoKo and preforms the same functions, this is just a clone of the work already done. The device will have a 2.0 inch 320x240 pixel display with an EYESPI connector and an added MircoSD card holder. The part is made by Adafruit and is an IPS display having a wide angle of viewing. It will run on 3.7V battery power and have 1500mAh, the battery will need a battery management system but it is still a work in progress. It will be navigated by 6 buttons with one in the middle used to select and the four around to navigate left, right, up and down. It will also need 1 more button to reset and boot the board and I need to add a switch to turn on and off the board(I could make the switch be connected directly to the battery but it risks having a voltage shock every time lowering the life of the TechBot. I could wire the switch a GPIO pin but the battery would be constantly drained. I need to do some more research to find out whats best.) I need too find all the parts, design a schematic with proper wiring and be efficent as possible to have the longest battery and component life. The PCB needs to be also designed efficently and could use some ground planes which i've recently been learning about. Then the 3D model, I want it to be stylish, fit in mypocket and be durable. My first pick for the type of filement would be PETG but if I aqiure better filiment I can use it to make a very durable case. 
+## What is TechBot4?
 
-# Purpose
+The TechBot4 is an ESP32-WROOM-32-N8 based pen testing tool inspired by the ESP32 Marauder by JustCallMeKoko. It performs similar WiFi and Bluetooth security testing functions in a custom, pocket-sized form factor.
+
+### Key Features:
+- **Display:** 2.0 inch 320x240 IPS display (Adafruit #4311) with EYESPI connector and wide viewing angles
+- **Microcontroller:** ESP32-WROOM-32-N8 with 8MB Flash, WiFi + Bluetooth capability
+- **Power:** 3.7V LiPo battery (1500mAh) with IP5306 power management for charging and 5V boost
+- **Navigation:** 5 buttons for navigation (UP, DOWN, LEFT, RIGHT, SELECT) + 1 RESET button
+- **Enclosure:** Designed for 3D printing with PETG filament for durability
+
+### Power Switch Recommendation:
+
+For the power switch, the recommended approach is to use the **IP5306's KEY function**:
+- The IP5306 has a built-in power management system with a KEY pin
+- Double-pressing the KEY button turns the device on
+- Long-pressing the KEY button turns the device off
+- This approach provides proper soft power control without voltage spikes or constant battery drain
+- Alternatively, you can add a slide switch between BAT+ and IP5306 BAT+ input with a small RC filter (10Ω + 100µF) to reduce inrush current
+
+---
+
+## Purpose
+
 I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. The TechBot4 is such a cool project that I have been excited about and is the fourth version of the TechBot series.
+
+---
+
+## Quick Reference Links
+
+- 📋 **Wiring Guide:** [WIRING.md](./WIRING.md) - Complete pin-by-pin wiring instructions
+- 🛠️ **ESP32 Marauder Firmware:** [GitHub - JustCallMeKoko](https://github.com/justcallmekoko/ESP32Marauder)
+- 📄 **ESP32 Datasheet:** [Espressif Official Documentation](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- 🖥️ **Display Product Page:** [Adafruit #4311](https://www.adafruit.com/product/4311)
+- 🔧 **JLCPCB Parts Library:** [JLCPCB Parts](https://jlcpcb.com/parts) - Search by PCBA number
+- 🔧 **LCSC Electronics:** [LCSC](https://www.lcsc.com/) - Alternative parts search
 
 

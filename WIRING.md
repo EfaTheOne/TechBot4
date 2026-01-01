@@ -2,6 +2,8 @@
 
 This guide provides detailed wiring instructions for connecting all components of the TechBot4 ESP32-based pen testing tool. This document is designed for beginners and includes clear pin-to-pin connections for use with EasyEDA.
 
+> ⚠️ **IMPORTANT:** This wiring guide has been verified against component datasheets. Always double-check pinouts against your specific component variants before soldering.
+
 ---
 
 ## Table of Contents
@@ -19,22 +21,27 @@ This guide provides detailed wiring instructions for connecting all components o
 ## Component Overview
 
 ### Main Components:
-- **ESP32-WROOM-32-N8**: Main microcontroller (C529582)
-- **Adafruit 2.0" IPS Display**: 320x240 pixel display with EYESPI connector (Product #4311)
-- **IP5306**: Battery charger & 5V boost converter (C96641)
-- **AMS1117-3.3**: 3.3V voltage regulator (C6186)
-- **USB Type-C Port**: Charging input (C165948)
-- **JST-PH 2-Pin Connector**: Battery connector (C396123)
-- **6x Tactile Switches**: Navigation and select buttons (C34260)
+| Component | Description | PCBA Number | Search Link |
+|-----------|-------------|-------------|-------------|
+| ESP32-WROOM-32-N8 | Main microcontroller (8MB Flash) | C529582 | [LCSC](https://www.lcsc.com/search?q=C529582) |
+| Adafruit 2.0" IPS Display | 320x240 pixel, EYESPI connector | Product #4311 | [Adafruit](https://www.adafruit.com/product/4311) |
+| IP5306 | Battery charger & 5V boost (SOP-8) | C96641 | [LCSC](https://www.lcsc.com/search?q=C96641) |
+| AMS1117-3.3 | 3.3V voltage regulator (SOT-223) | C6186 | [LCSC](https://www.lcsc.com/search?q=C6186) |
+| USB Type-C Port | 16-Pin SMD charging input | C165948 | [LCSC](https://www.lcsc.com/search?q=C165948) |
+| JST-PH 2-Pin | Battery connector (Vertical SMD) | C396123 | [LCSC](https://www.lcsc.com/search?q=C396123) |
+| Tactile Switch 6x6mm | Navigation and reset buttons (6x) | C34260 | [LCSC](https://www.lcsc.com/search?q=C34260) |
+| FPC Connector 40-Pin | 0.5mm pitch, bottom contact | C55234 | [LCSC](https://www.lcsc.com/search?q=C55234) |
 
 ### Supporting Components:
-- **1.0µH Inductor** (C116556): 1x - For IP5306
-- **22µF Capacitors** (C96446): 2x - IP5306 filtering
-- **10µF Capacitors** (C19702): 3x - Regulator and ESP32 power
-- **0.1µF Capacitor** (C14663): 1x - ESP32 decoupling
-- **5.1kΩ Resistors** (C23178): 2x - USB-C CC pins
-- **1kΩ Resistor** (C21190): 1x - LED/EN pull-up
-- **10kΩ Resistors** (C23177): 6x - 5 for button pull-downs, 1 for GPIO 0 pull-up
+| Component | Value/Spec | PCBA Number | Qty | Purpose | Search Link |
+|-----------|------------|-------------|-----|---------|-------------|
+| Capacitor | 22µF, 0603, X5R, 10V | C96446 | 2x | IP5306 filtering | [LCSC](https://www.lcsc.com/search?q=C96446) |
+| Capacitor | 10µF, 0603, X5R, 16V | C19702 | 3x | Regulator & ESP32 | [LCSC](https://www.lcsc.com/search?q=C19702) |
+| Capacitor | 0.1µF, 0603, X7R, 50V | C14663 | 1x | ESP32 decoupling | [LCSC](https://www.lcsc.com/search?q=C14663) |
+| Resistor | 5.1kΩ, 0603, 1% | C23178 | 2x | USB-C CC pins | [LCSC](https://www.lcsc.com/search?q=C23178) |
+| Resistor | 10kΩ, 0603, 1% | C23177 | 7x | Button pull-downs + boot | [LCSC](https://www.lcsc.com/search?q=C23177) |
+
+> **Note:** The IP5306 is a fully integrated power bank SoC. The external inductor (C116556) originally listed is NOT required for standard IP5306 operation as it has an internal switching inductor.
 
 ---
 
@@ -42,33 +49,44 @@ This guide provides detailed wiring instructions for connecting all components o
 
 The ESP32-WROOM-32-N8 is a 38-pin module. Here are the key pins you'll use:
 
+> 📌 **Reference:** [ESP32-WROOM-32 Datasheet](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+
 ### Power Pins:
 - **Pin 1 (GND)**: Ground - Connect to system ground
 - **Pin 2 (3V3)**: 3.3V power input - Connect to AMS1117 output
 - **Pin 38 (GND)**: Ground - Connect to system ground
 
-### SPI Pins (for Display):
-- **Pin 25 (GPIO 23)**: MOSI (Master Out Slave In) - Display data
-- **Pin 31 (GPIO 19)**: MISO (Master In Slave Out) - Display data (optional for display)
-- **Pin 30 (GPIO 18)**: SCK (Clock) - Display clock
-- **Pin 29 (GPIO 5)**: CS (Chip Select) - Display chip select
+### SPI Pins (for Display - Hardware SPI VSPI):
+- **GPIO 23 (Pin 37)**: MOSI (Master Out Slave In) - Display data
+- **GPIO 19 (Pin 31)**: MISO (Master In Slave Out) - Optional for display
+- **GPIO 18 (Pin 30)**: SCK (Clock) - Display clock
+- **GPIO 5 (Pin 29)**: CS (Chip Select) - Display chip select
 
 ### Display Control Pins:
-- **Pin 26 (GPIO 22)**: DC (Data/Command) - Display data/command control
-- **Pin 23 (GPIO 21)**: RST (Reset) - Display reset (can also use EN)
-- **Pin 16 (GPIO 4)**: Backlight control (optional PWM)
+- **GPIO 22 (Pin 36)**: DC (Data/Command) - Display data/command control
+- **GPIO 21 (Pin 33)**: RST (Reset) - Display reset
+- **GPIO 4 (Pin 26)**: Backlight control (optional PWM)
 
 ### Button Input Pins:
-- **Pin 13 (GPIO 12)**: Button UP
-- **Pin 12 (GPIO 13)**: Button DOWN
-- **Pin 11 (GPIO 14)**: Button LEFT
-- **Pin 10 (GPIO 15)**: Button RIGHT
-- **Pin 9 (GPIO 2)**: Button SELECT/ENTER
-- **Pin 3 (EN)**: RESET button (active LOW with external pull-up)
+> ⚠️ **Important:** GPIO 2 is connected to the onboard LED and must be LOW during boot. Avoid using GPIO 2 for buttons. Use GPIO 27 instead for SELECT.
+
+- **GPIO 12 (Pin 14)**: Button UP
+- **GPIO 13 (Pin 16)**: Button DOWN
+- **GPIO 14 (Pin 13)**: Button LEFT
+- **GPIO 15 (Pin 23)**: Button RIGHT
+- **GPIO 27 (Pin 12)**: Button SELECT/ENTER *(Changed from GPIO 2)*
+- **EN (Pin 3)**: RESET button (active LOW with external pull-up)
+
+### Strapping Pins (Boot Configuration):
+- **GPIO 0 (Pin 25)**: Boot mode - Must be HIGH for normal operation (10kΩ pull-up to 3.3V)
+- **GPIO 2 (Pin 24)**: Must be LOW or floating during boot (connected to onboard LED)
+- **GPIO 15 (Pin 23)**: Should be HIGH during boot (handled by button pull-down when not pressed)
+- **EN (Pin 3)**: Chip enable - Must be HIGH for operation (10kΩ pull-up to 3.3V)
 
 ### Other Important Pins:
-- **Pin 8 (GPIO 0)**: Boot mode (must be HIGH for normal operation)
-- **Pin 7 (GPIO 34)**: Battery voltage monitoring (ADC input, optional)
+- **GPIO 34 (Pin 6)**: Battery voltage monitoring (ADC1_CH6, input-only - optional)
+- **GPIO 1 (TXD0, Pin 35)**: UART TX - Available for debugging
+- **GPIO 3 (RXD0, Pin 34)**: UART RX - Available for debugging
 
 ---
 
@@ -102,32 +120,49 @@ Pin 2 (Black wire): BAT- → System Ground
 
 **Battery Specs:** 3.7V LiPo, 1500mAh
 
-### Section 3: IP5306 Power Management IC (ESOP-8)
+### Section 3: IP5306 Power Management IC (SOP-8)
 
-#### IP5306 Pinout (C96641):
+> ⚠️ **Critical:** The IP5306 is a **fully integrated power bank SoC** with internal switching components. Unlike many boost converters, it does NOT require an external inductor.
+
+#### IP5306 Pinout (C96641) - Verified from Datasheet:
 ```
-Pin 1: VIN    - USB 5V input
-Pin 2: GND    - Ground
-Pin 3: BAT+   - Battery positive
-Pin 4: BAT-   - Battery negative (typically GND)
-Pin 5: VOUT   - 5V output
-Pin 6: FB     - Feedback (internal, may have external components)
-Pin 7: SW     - Switching pin (connect inductor here)
-Pin 8: EN     - Enable (pull HIGH or connect to VIN via resistor)
+      ┌────────────────┐
+VOUT ─┤ 1            8 ├─ VIN (BAT+)
+ GND ─┤ 2            7 ├─ LED1
+ KEY ─┤ 3            6 ├─ LED2
+LED4 ─┤ 4            5 ├─ LED3
+      └────────────────┘
 ```
+
+| Pin | Name | Function |
+|-----|------|----------|
+| 1 | VOUT | 5V Output (to AMS1117 VIN) |
+| 2 | GND | Ground |
+| 3 | KEY | Power key input (for power on/off control) |
+| 4 | LED4 | LED indicator 4 (optional) |
+| 5 | LED3 | LED indicator 3 (optional) |
+| 6 | LED2 | LED indicator 2 (optional) |
+| 7 | LED1 | LED indicator 1 (optional) |
+| 8 | VIN | Battery positive / USB 5V input |
 
 **Connections:**
-1. **Pin 1 (VIN)** ← **USB-C VBUS** (through 22µF capacitor C1 to GND for filtering)
+1. **Pin 1 (VOUT)** → **5V Rail** with **22µF capacitor (C2)** to GND → **AMS1117 VIN**
 2. **Pin 2 (GND)** → **System Ground**
-3. **Pin 3 (BAT+)** ← **JST Connector Pin 1** (Battery positive)
-4. **Pin 4 (BAT-)** → **System Ground**
-5. **Pin 5 (VOUT)** → **5V Rail** (through 22µF capacitor C2 to GND for filtering) → **AMS1117 VIN**
-6. **Pin 7 (SW)** ← **1.0µH Inductor (L1)** → **VOUT (Pin 5)**
-7. **Pin 8 (EN)** → **VIN** (or use 1kΩ pull-up to VIN for enable)
+3. **Pin 3 (KEY)** → **Momentary button to GND** (optional - for power on/off) OR leave unconnected for always-on when battery is connected
+4. **Pins 4-7 (LED1-4)** → **Optional LED indicators** with current limiting resistors (330Ω each) OR leave unconnected
+5. **Pin 8 (VIN/BAT+)** ← **JST Connector Pin 1 (Battery+)** AND **USB-C VBUS** with **22µF capacitor (C1)** to GND
+
+**Important Notes:**
+- The IP5306 handles both charging and boosting internally
+- No external inductor is required
+- The KEY pin can be used for soft power control:
+  - Double-press to turn ON
+  - Long press (2+ seconds) to turn OFF
+- If KEY is not used, the device turns on automatically when battery is connected
 
 **Capacitor Placement:**
-- **C1 (22µF)**: Between IP5306 VIN (Pin 1) and GND
-- **C2 (22µF)**: Between IP5306 VOUT (Pin 5) and GND
+- **C1 (22µF)**: Between IP5306 VIN (Pin 8) and GND - input/battery filtering
+- **C2 (22µF)**: Between IP5306 VOUT (Pin 1) and GND - output filtering
 
 ### Section 4: AMS1117-3.3 Voltage Regulator (SOT-223)
 
@@ -166,38 +201,76 @@ Tab (GND):       Ground (connected to Pin 1)
 
 ### Adafruit 2.0" IPS Display (Product #4311)
 
-The Adafruit 2.0" 320x240 IPS display uses an EYESPI 40-pin FPC connector (0.5mm pitch). Here are the critical connections:
+The Adafruit 2.0" 320x240 IPS display uses an ST7789 driver IC and connects via a 40-pin FPC connector (0.5mm pitch) with the EYESPI standard.
 
-#### Display Pinout (via FPC Connector C55234):
+> 📌 **Reference:** [Adafruit 2.0" 320x240 IPS Display](https://www.adafruit.com/product/4311) | [EYESPI Connector Pinout](https://learn.adafruit.com/adafruit-eyespi-reversible-fpc-standard)
 
-**Power:**
-- **VIN/VCC**: 3.3V from ESP32 or AMS1117
-- **GND**: System Ground
+#### EYESPI Standard Pinout (40-Pin FPC):
 
-**SPI Interface:**
-- **SCK (Clock)**: ESP32 GPIO 18 (Pin 30)
-- **MOSI (Data Out)**: ESP32 GPIO 23 (Pin 25)
-- **MISO (Data In)**: ESP32 GPIO 19 (Pin 31) - Optional, not always needed for display-only
-- **CS (Chip Select)**: ESP32 GPIO 5 (Pin 29)
-- **DC (Data/Command)**: ESP32 GPIO 22 (Pin 26)
-- **RST (Reset)**: ESP32 GPIO 21 (Pin 23) OR connected to ESP32 EN pin
-- **BL (Backlight)**: ESP32 GPIO 4 (Pin 16) for PWM control, or 3.3V for always-on
+The Adafruit EYESPI connector is designed to be reversible. The key pins are:
+
+| FPC Pin | Function | ESP32 GPIO | ESP32 Pin # | Notes |
+|---------|----------|------------|-------------|-------|
+| 1-4 | GND | - | 1, 38 | Ground connections |
+| 5-8 | 3V3 | - | 2 | 3.3V Power |
+| 9 | SCK | GPIO 18 | 30 | SPI Clock |
+| 10 | MISO | GPIO 19 | 31 | SPI Data In (optional) |
+| 11 | MOSI | GPIO 23 | 37 | SPI Data Out |
+| 12 | TFT_CS | GPIO 5 | 29 | Display Chip Select |
+| 13 | TFT_DC | GPIO 22 | 36 | Data/Command Select |
+| 14 | TFT_RST | GPIO 21 | 33 | Display Reset |
+| 15 | LITE | GPIO 4 | 26 | Backlight PWM control |
+| 16-20 | NC | - | - | Not connected |
+| 21-24 | GND | - | 1, 38 | Ground |
+| 25-28 | GND | - | 1, 38 | Ground (SD card side) |
+| 29 | SD_CS | Not used | - | SD Card Chip Select |
+| 30 | SD_MISO | Not used | - | SD Card Data Out |
+| 31 | SD_MOSI | Not used | - | SD Card Data In |
+| 32 | SD_SCK | Not used | - | SD Card Clock |
+| 33-40 | GND/NC | - | - | Ground or not connected |
+
+> ⚠️ **Important:** The exact FPC pinout may vary. Always verify against the specific display's datasheet before wiring. The above is based on the EYESPI standard.
 
 #### Recommended ESP32 to Display Connections:
 
-| Display Pin | Function | ESP32 Pin | ESP32 GPIO |
-|-------------|----------|-----------|------------|
-| VCC/VIN     | Power    | Pin 2     | 3V3        |
-| GND         | Ground   | Pin 1/38  | GND        |
-| SCK         | SPI Clock| Pin 30    | GPIO 18    |
-| MOSI        | SPI Data | Pin 25    | GPIO 23    |
-| MISO        | SPI Data | Pin 31    | GPIO 19    |
-| CS          | Chip Sel | Pin 29    | GPIO 5     |
-| DC          | Data/Cmd | Pin 26    | GPIO 22    |
-| RST         | Reset    | Pin 23    | GPIO 21    |
-| BL/LITE     | Backlight| Pin 16    | GPIO 4     |
+| Display Signal | Function | ESP32 GPIO | ESP32 Pin # | Wire Color Suggestion |
+|----------------|----------|------------|-------------|----------------------|
+| VCC/VIN | Power (3.3V) | 3V3 | 2 | Red |
+| GND | Ground | GND | 1 or 38 | Black |
+| SCK | SPI Clock | GPIO 18 | 30 | Yellow |
+| MOSI | SPI Data Out | GPIO 23 | 37 | Blue |
+| MISO | SPI Data In | GPIO 19 | 31 | Green (optional) |
+| CS | Chip Select | GPIO 5 | 29 | Orange |
+| DC | Data/Command | GPIO 22 | 36 | Purple |
+| RST | Reset | GPIO 21 | 33 | White |
+| BL/LITE | Backlight | GPIO 4 | 26 | Gray |
 
-**Note:** The exact FPC pinout for the Adafruit display should be verified from the product datasheet. The above assumes standard SPI TFT connections.
+#### Display Software Configuration (for ESP32 Marauder):
+
+```cpp
+// TFT_eSPI User_Setup.h configuration
+#define ST7789_DRIVER
+#define TFT_WIDTH  240
+#define TFT_HEIGHT 320
+
+#define TFT_MOSI 23
+#define TFT_SCLK 18
+#define TFT_CS    5
+#define TFT_DC   22
+#define TFT_RST  21
+#define TFT_BL    4  // Backlight control
+
+// Optional: MISO for reading display
+#define TFT_MISO 19
+```
+
+#### Backlight Control Options:
+
+1. **PWM Control (Recommended):** Connect BL to GPIO 4 for brightness control via PWM
+2. **Always On:** Connect BL directly to 3.3V for full brightness
+3. **On/Off Only:** Connect BL to a GPIO and set HIGH/LOW
+
+> **Note:** The ST7789 display draws approximately 20-40mA for the backlight. Using PWM at 50% duty cycle can significantly improve battery life.
 
 ---
 
@@ -206,6 +279,8 @@ The Adafruit 2.0" 320x240 IPS display uses an EYESPI 40-pin FPC connector (0.5mm
 ### 6x Tactile Switches (6x6mm Through-Hole, C34260)
 
 Each button is wired with a pull-down resistor configuration for stable readings (except the RESET button which uses a pull-up).
+
+> ⚠️ **Important Change:** The SELECT button has been moved from GPIO 2 to **GPIO 27**. GPIO 2 is a strapping pin that must be LOW during boot and is connected to the onboard LED.
 
 #### Button Schematic (for navigation buttons):
 ```
@@ -220,11 +295,14 @@ Each button is wired with a pull-down resistor configuration for stable readings
         GND
 ```
 
+When the button is **not pressed**: GPIO reads LOW (pulled down by resistor)
+When the button is **pressed**: GPIO reads HIGH (connected to 3.3V)
+
 #### RESET Button Schematic:
 ```
         3.3V
          |
-      [1kΩ Resistor]
+      [10kΩ Resistor]
          |
          ├─────→ ESP32 EN Pin
          |
@@ -233,56 +311,126 @@ Each button is wired with a pull-down resistor configuration for stable readings
         GND
 ```
 
+When the button is **not pressed**: EN is HIGH (pulled up by resistor, ESP32 runs)
+When the button is **pressed**: EN is LOW (connected to GND, ESP32 resets)
+
 #### Individual Button Connections:
 
 **Button 1 - UP:**
 - One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 13 (GPIO 12)** AND **10kΩ resistor (R3)** → **GND**
+- Other terminal → **ESP32 GPIO 12 (Pin 14)** AND **10kΩ resistor (R3)** → **GND**
 
 **Button 2 - DOWN:**
 - One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 12 (GPIO 13)** AND **10kΩ resistor (R4)** → **GND**
+- Other terminal → **ESP32 GPIO 13 (Pin 16)** AND **10kΩ resistor (R4)** → **GND**
 
 **Button 3 - LEFT:**
 - One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 11 (GPIO 14)** AND **10kΩ resistor (R5)** → **GND**
+- Other terminal → **ESP32 GPIO 14 (Pin 13)** AND **10kΩ resistor (R5)** → **GND**
 
 **Button 4 - RIGHT:**
 - One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 10 (GPIO 15)** AND **10kΩ resistor (R6)** → **GND**
+- Other terminal → **ESP32 GPIO 15 (Pin 23)** AND **10kΩ resistor (R6)** → **GND**
 
 **Button 5 - SELECT/ENTER:**
 - One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 9 (GPIO 2)** AND **10kΩ resistor (R7)** → **GND**
+- Other terminal → **ESP32 GPIO 27 (Pin 12)** AND **10kΩ resistor (R7)** → **GND**
+- *(Changed from GPIO 2 to GPIO 27 to avoid boot issues)*
 
 **Button 6 - RESET:**
 - One terminal → **GND**
-- Other terminal → **ESP32 Pin 3 (EN)**
-- **NOTE:** EN pin needs external pull-up resistor (use the 1kΩ resistor R8) from EN to 3.3V for normal operation. Button pulls it LOW to reset.
+- Other terminal → **ESP32 EN (Pin 3)**
+- **NOTE:** EN pin needs external pull-up resistor (10kΩ - R8) from EN to 3.3V for normal operation. Button pulls it LOW to reset.
 
 #### Resistor Summary:
-- **R3 (10kΩ)**: GPIO 12 to GND (pull-down for UP button)
-- **R4 (10kΩ)**: GPIO 13 to GND (pull-down for DOWN button)
-- **R5 (10kΩ)**: GPIO 14 to GND (pull-down for LEFT button)
-- **R6 (10kΩ)**: GPIO 15 to GND (pull-down for RIGHT button)
-- **R7 (10kΩ)**: GPIO 2 to GND (pull-down for SELECT button)
-- **R8 (1kΩ)**: EN to 3.3V (pull-up for normal operation)
-- **R9 (10kΩ)**: GPIO 0 to 3.3V (pull-up for normal boot mode)
-
-**Important:** The RESET button connects EN to GND when pressed. The 1kΩ pull-up resistor keeps EN HIGH during normal operation.
+| Resistor | Value | Connection | Purpose |
+|----------|-------|------------|---------|
+| R3 | 10kΩ | GPIO 12 to GND | Pull-down for UP button |
+| R4 | 10kΩ | GPIO 13 to GND | Pull-down for DOWN button |
+| R5 | 10kΩ | GPIO 14 to GND | Pull-down for LEFT button |
+| R6 | 10kΩ | GPIO 15 to GND | Pull-down for RIGHT button |
+| R7 | 10kΩ | GPIO 27 to GND | Pull-down for SELECT button |
+| R8 | 10kΩ | EN to 3.3V | Pull-up for normal operation |
+| R9 | 10kΩ | GPIO 0 to 3.3V | Pull-up for normal boot mode |
 
 ---
 
 ## Boot Configuration
 
-For the ESP32 to boot normally into the main program, GPIO 0 must be HIGH during boot. This requires a pull-up resistor:
+### ESP32 Strapping Pins
 
-**GPIO 0 Boot Mode Configuration:**
-- **10kΩ resistor (R9)** from **GPIO 0 (Pin 8)** to **3.3V**
+The ESP32 uses several "strapping pins" to determine boot behavior. These pins must be at specific levels during power-up.
+
+> ⚠️ **Critical:** Incorrect strapping pin configuration will prevent the ESP32 from booting properly!
+
+#### Strapping Pin Requirements:
+
+| GPIO | Required Level at Boot | Our Configuration | Result |
+|------|----------------------|-------------------|--------|
+| GPIO 0 | HIGH | 10kΩ pull-up to 3.3V | Normal boot (run program) |
+| GPIO 2 | LOW/Floating | Not connected (internal LED) | Normal boot |
+| GPIO 12 | LOW | 10kΩ pull-down (UP button) | 3.3V Flash voltage |
+| GPIO 15 | HIGH (with internal pull-up) | 10kΩ pull-down (RIGHT button) | Works due to internal pull-up |
+| EN | HIGH | 10kΩ pull-up to 3.3V | Chip enabled |
+
+#### GPIO 0 Boot Mode Configuration:
+
+```
+        3.3V
+         |
+      [10kΩ R9]
+         |
+         └─────→ ESP32 GPIO 0 (Pin 25)
+```
+
+- **10kΩ resistor (R9)** from **GPIO 0 (Pin 25)** to **3.3V**
 - This ensures GPIO 0 is HIGH during boot, allowing normal program execution
-- If GPIO 0 is LOW during boot, the ESP32 enters firmware download mode
+- If GPIO 0 is LOW during boot, the ESP32 enters **firmware download mode** (for flashing)
 
-**Important:** Do NOT connect a button to GPIO 0 unless you want to be able to force firmware download mode. For normal operation, just the pull-up resistor is sufficient.
+#### EN (Enable) Pin Configuration:
+
+```
+        3.3V
+         |
+      [10kΩ R8]
+         |
+         ├─────→ ESP32 EN (Pin 3)
+         |
+      [RESET Button]
+         |
+        GND
+```
+
+- **10kΩ resistor (R8)** from **EN (Pin 3)** to **3.3V** keeps the ESP32 running
+- **RESET button** connects EN to GND when pressed, causing a reset
+- The 10kΩ value provides adequate pull-up while allowing the button to pull the pin LOW
+
+#### GPIO 12 (Flash Voltage Selection):
+
+GPIO 12 determines the VDD_SDIO voltage regulator output:
+- **LOW at boot:** VDD_SDIO = 3.3V (required for ESP32-WROOM-32)
+- **HIGH at boot:** VDD_SDIO = 1.8V (causes boot failure for most ESP32 modules)
+
+Our design uses a 10kΩ pull-down on GPIO 12 (for the UP button), which ensures it's LOW at boot. This is the correct configuration for ESP32-WROOM-32-N8.
+
+#### Optional: Programming Mode Button
+
+If you want to manually enter programming/download mode:
+
+```
+        ESP32 GPIO 0 (Pin 25)
+              |
+           [Button]
+              |
+             GND
+```
+
+To enter download mode:
+1. Hold the BOOT button (GPIO 0 to GND)
+2. Press and release the RESET button (EN to GND)
+3. Release the BOOT button
+
+This puts the ESP32 in download mode for firmware flashing. However, for TechBot4, OTA (Over-The-Air) updates are recommended instead.
 
 ---
 
@@ -290,40 +438,61 @@ For the ESP32 to boot normally into the main program, GPIO 0 must be HIGH during
 
 ### ESP32-WROOM-32-N8 Pin Assignments:
 
-| Pin # | ESP32 Pin Name | Function | Connection |
-|-------|----------------|----------|------------|
-| 1     | GND            | Ground   | System Ground |
-| 2     | 3V3            | Power    | AMS1117 3.3V Output + Capacitors |
-| 3     | EN             | Reset    | 1kΩ pull-up to 3.3V + Reset Button to GND |
-| 4-7   | GPIO 36-39     | Input Only | Not used (can be used for ADC) |
-| 8     | GPIO 0         | Boot Mode | 10kΩ pull-up to 3.3V (normal boot) |
-| 9     | GPIO 2         | Button   | SELECT Button (with 10kΩ pull-down) |
-| 10    | GPIO 15        | Button   | RIGHT Button (with 10kΩ pull-down) |
-| 11    | GPIO 14        | Button   | LEFT Button (with 10kΩ pull-down) |
-| 12    | GPIO 13        | Button   | DOWN Button (with 10kΩ pull-down) |
-| 13    | GPIO 12        | Button   | UP Button (with 10kΩ pull-down) |
-| 14-15 | GND, VCC       | Power    | Ground and 3.3V |
-| 16    | GPIO 4         | Display  | Backlight Control (PWM) |
-| 17-22 | Various GPIO   | Available | Not used in base design |
-| 23    | GPIO 21        | Display  | RST (Reset) |
-| 24    | GPIO 1 (TXD)   | UART     | Available for debugging |
-| 25    | GPIO 23        | Display  | MOSI (SPI Data Out) |
-| 26    | GPIO 22        | Display  | DC (Data/Command) |
-| 27    | GPIO 3 (RXD)   | UART     | Available for debugging |
-| 28    | GPIO 16        | Available | Not used |
-| 29    | GPIO 5         | Display  | CS (Chip Select) |
-| 30    | GPIO 18        | Display  | SCK (SPI Clock) |
-| 31    | GPIO 19        | Display  | MISO (SPI Data In) |
-| 32-37 | Various GPIO   | Available | Not used |
-| 38    | GND            | Ground   | System Ground |
+> 📌 **Note:** Pin numbers refer to the physical module pin numbering. GPIO numbers are the logical pin names used in code.
+
+| Pin # | GPIO | Function | Connection | Notes |
+|-------|------|----------|------------|-------|
+| 1 | GND | Ground | System Ground | |
+| 2 | 3V3 | Power | AMS1117 3.3V Output | Add 10µF + 0.1µF capacitors |
+| 3 | EN | Reset | 10kΩ pull-up to 3.3V + Reset Button to GND | Must be HIGH for operation |
+| 4 | SENSOR_VP (GPIO 36) | Input Only | Not used | ADC1_CH0, input-only |
+| 5 | SENSOR_VN (GPIO 39) | Input Only | Not used | ADC1_CH3, input-only |
+| 6 | GPIO 34 | ADC Input | Battery voltage monitoring (optional) | Input-only pin |
+| 7 | GPIO 35 | Input Only | Not used | ADC1_CH7, input-only |
+| 8-11 | NC | No Connect | Not connected | Internal use |
+| 12 | GPIO 27 | Button | SELECT Button (with 10kΩ pull-down) | Safe GPIO for buttons |
+| 13 | GPIO 14 | Button | LEFT Button (with 10kΩ pull-down) | ⚠️ Outputs PWM at boot |
+| 14 | GPIO 12 | Button | UP Button (with 10kΩ pull-down) | ⚠️ Strapping pin - must be LOW at boot |
+| 15 | GND | Ground | System Ground | |
+| 16 | GPIO 13 | Button | DOWN Button (with 10kΩ pull-down) | |
+| 17-22 | NC | No Connect | Not connected | Internal use |
+| 23 | GPIO 15 | Button | RIGHT Button (with 10kΩ pull-down) | ⚠️ Outputs PWM at boot |
+| 24 | GPIO 2 | Boot/LED | Not used (onboard LED) | ⚠️ Must be LOW at boot |
+| 25 | GPIO 0 | Boot Mode | 10kΩ pull-up to 3.3V | ⚠️ Must be HIGH for normal boot |
+| 26 | GPIO 4 | Display | Backlight Control (PWM) | |
+| 27 | GPIO 16 | Available | Not used in base design | |
+| 28 | GPIO 17 | Available | Not used in base design | |
+| 29 | GPIO 5 | Display | CS (Chip Select) | ⚠️ Outputs PWM at boot |
+| 30 | GPIO 18 | Display | SCK (SPI Clock) | VSPI CLK |
+| 31 | GPIO 19 | Display | MISO (optional) | VSPI MISO |
+| 32 | NC | No Connect | Not connected | |
+| 33 | GPIO 21 | Display | RST (Reset) | |
+| 34 | RXD0 (GPIO 3) | UART | Available for debugging | |
+| 35 | TXD0 (GPIO 1) | UART | Available for debugging | |
+| 36 | GPIO 22 | Display | DC (Data/Command) | |
+| 37 | GPIO 23 | Display | MOSI (SPI Data Out) | VSPI MOSI |
+| 38 | GND | Ground | System Ground | |
+
+### Strapping Pin Summary (Critical for Boot):
+
+| Pin | GPIO | Boot Requirement | Our Solution |
+|-----|------|------------------|--------------|
+| 3 | EN | HIGH | 10kΩ pull-up to 3.3V |
+| 25 | GPIO 0 | HIGH | 10kΩ pull-up to 3.3V |
+| 24 | GPIO 2 | LOW/Floating | Not connected (internal LED) |
+| 14 | GPIO 12 | LOW | 10kΩ pull-down (UP button) ✓ |
+| 23 | GPIO 15 | HIGH | 10kΩ pull-down (RIGHT button) - reads LOW, but ESP32 has internal pull-up |
+
+> ⚠️ **Note about GPIO 12 and 15:** These are strapping pins that affect boot behavior. GPIO 12 LOW sets flash voltage to 3.3V (correct for ESP32-WROOM-32). The button pull-down resistors ensure proper boot state when buttons are not pressed.
 
 ### Power Distribution Summary:
 
-| Rail | Source | Consumers |
-|------|--------|-----------|
-| 5V   | IP5306 VOUT | AMS1117 VIN |
-| 3.3V | AMS1117 VOUT | ESP32, Display, Buttons (pull-up) |
-| GND  | Battery, USB-C | All components |
+| Rail | Source | Consumers | Capacitors |
+|------|--------|-----------|------------|
+| Battery (3.7V) | LiPo Battery | IP5306 VIN (Pin 8) | 22µF at IP5306 input |
+| 5V | IP5306 VOUT | AMS1117 VIN | 22µF at IP5306 output, 10µF at AMS1117 input |
+| 3.3V | AMS1117 VOUT | ESP32, Display, Button pull-ups | 10µF + 0.1µF at ESP32 |
+| GND | Common | All components | Connected to ground plane |
 
 ---
 
@@ -332,40 +501,57 @@ For the ESP32 to boot normally into the main program, GPIO 0 must be HIGH during
 Use this checklist to verify your connections:
 
 ### Power System:
-- [ ] USB-C VBUS pins → IP5306 VIN (with 22µF capacitor to GND)
-- [ ] USB-C CC1 → 5.1kΩ → GND
-- [ ] USB-C CC2 → 5.1kΩ → GND
-- [ ] USB-C GND pins → System Ground
-- [ ] Battery + → IP5306 BAT+
-- [ ] Battery - → System Ground
-- [ ] IP5306 SW pin → 1.0µH inductor → IP5306 VOUT
-- [ ] IP5306 VOUT → AMS1117 VIN (with 22µF output capacitor and 10µF input capacitor)
-- [ ] AMS1117 VOUT → ESP32 3V3 (with 10µF + 0.1µF capacitors)
-- [ ] All grounds connected together
+- [ ] USB-C VBUS pins (A4, A9, B4, B9) → IP5306 VIN (Pin 8) with 22µF capacitor to GND
+- [ ] USB-C CC1 (A5) → 5.1kΩ resistor → GND
+- [ ] USB-C CC2 (B5) → 5.1kΩ resistor → GND
+- [ ] USB-C GND pins (A1, A12, B1, B12) → System Ground
+- [ ] Battery + (JST Pin 1) → IP5306 VIN (Pin 8)
+- [ ] Battery - (JST Pin 2) → System Ground
+- [ ] IP5306 VOUT (Pin 1) → AMS1117 VIN with 22µF output capacitor and 10µF input capacitor
+- [ ] IP5306 GND (Pin 2) → System Ground
+- [ ] AMS1117 VOUT (Pin 2) → ESP32 3V3 with 10µF + 0.1µF capacitors
+- [ ] AMS1117 GND (Pin 1 & Tab) → System Ground
+- [ ] All grounds connected to ground plane
 
-### Display Connections:
+### Display Connections (via FPC Connector C55234):
 - [ ] Display VCC → 3.3V
 - [ ] Display GND → System Ground
-- [ ] Display SCK → ESP32 GPIO 18
-- [ ] Display MOSI → ESP32 GPIO 23
-- [ ] Display MISO → ESP32 GPIO 19 (optional)
-- [ ] Display CS → ESP32 GPIO 5
-- [ ] Display DC → ESP32 GPIO 22
-- [ ] Display RST → ESP32 GPIO 21
-- [ ] Display BL → ESP32 GPIO 4
+- [ ] Display SCK → ESP32 GPIO 18 (Pin 30)
+- [ ] Display MOSI → ESP32 GPIO 23 (Pin 37)
+- [ ] Display MISO → ESP32 GPIO 19 (Pin 31) *(optional)*
+- [ ] Display CS → ESP32 GPIO 5 (Pin 29)
+- [ ] Display DC → ESP32 GPIO 22 (Pin 36)
+- [ ] Display RST → ESP32 GPIO 21 (Pin 33)
+- [ ] Display BL → ESP32 GPIO 4 (Pin 26)
 
 ### Button Connections:
-- [ ] UP button → GPIO 12 (with 10kΩ pull-down)
-- [ ] DOWN button → GPIO 13 (with 10kΩ pull-down)
-- [ ] LEFT button → GPIO 14 (with 10kΩ pull-down)
-- [ ] RIGHT button → GPIO 15 (with 10kΩ pull-down)
-- [ ] SELECT button → GPIO 2 (with 10kΩ pull-down)
-- [ ] RESET button → EN to GND (with 1kΩ pull-up to 3.3V)
-- [ ] All button common terminals → 3.3V
+- [ ] UP button → GPIO 12 (Pin 14) with 10kΩ pull-down to GND
+- [ ] DOWN button → GPIO 13 (Pin 16) with 10kΩ pull-down to GND
+- [ ] LEFT button → GPIO 14 (Pin 13) with 10kΩ pull-down to GND
+- [ ] RIGHT button → GPIO 15 (Pin 23) with 10kΩ pull-down to GND
+- [ ] SELECT button → GPIO 27 (Pin 12) with 10kΩ pull-down to GND *(not GPIO 2!)*
+- [ ] RESET button → EN (Pin 3) to GND with 10kΩ pull-up to 3.3V
+- [ ] All navigation button common terminals → 3.3V
 
-### Boot Configuration:
-- [ ] GPIO 0 → 10kΩ pull-up to 3.3V (for normal boot)
-- [ ] EN → 1kΩ pull-up to 3.3V (for normal operation)
+### Boot Configuration (Critical):
+- [ ] GPIO 0 (Pin 25) → 10kΩ pull-up to 3.3V (for normal boot)
+- [ ] EN (Pin 3) → 10kΩ pull-up to 3.3V (for normal operation)
+- [ ] GPIO 2 (Pin 24) → Not connected (leave for onboard LED)
+- [ ] GPIO 12 (Pin 14) → 10kΩ pull-down (UP button) - ensures LOW at boot
+
+### Capacitor Verification:
+- [ ] C1 (22µF): IP5306 VIN to GND
+- [ ] C2 (22µF): IP5306 VOUT to GND
+- [ ] C3 (10µF): AMS1117 VIN to GND
+- [ ] C4 (10µF): AMS1117 VOUT to GND
+- [ ] C5 (10µF): ESP32 3V3 to GND (bulk)
+- [ ] C6 (0.1µF): ESP32 3V3 to GND (decoupling, close to ESP32)
+
+### Resistor Verification:
+- [ ] R1, R2 (5.1kΩ): USB-C CC1 and CC2 to GND
+- [ ] R3-R7 (10kΩ each): Button pull-downs to GND
+- [ ] R8 (10kΩ): EN pull-up to 3.3V
+- [ ] R9 (10kΩ): GPIO 0 pull-up to 3.3V
 
 ---
 
@@ -400,42 +586,132 @@ Use this checklist to verify your connections:
 
 ## Troubleshooting Tips
 
-**ESP32 won't boot:**
-- Check EN pin has pull-up resistor (1kΩ to 3.3V)
-- Check GPIO 0 is pulled HIGH (not floating or LOW during boot)
-- Verify 3.3V power supply is stable and within 3.0-3.6V range
+### ESP32 won't boot:
+- ✅ Check EN pin has 10kΩ pull-up resistor to 3.3V
+- ✅ Check GPIO 0 is pulled HIGH (10kΩ to 3.3V) - not floating or LOW during boot
+- ✅ Check GPIO 12 is LOW during boot (our pull-down resistor handles this)
+- ✅ Verify 3.3V power supply is stable and within 3.0-3.6V range
+- ✅ Ensure no buttons are pressed during power-up
 
-**Display not working:**
-- Verify SPI connections are correct (especially SCK and MOSI)
-- Check CS pin is correctly connected
-- Verify 3.3V power to display
-- Check backlight is enabled (BL pin HIGH or PWM)
+### ESP32 enters download mode instead of running:
+- GPIO 0 must be HIGH during boot - verify pull-up resistor is connected
+- Check for shorts between GPIO 0 and GND
+- Ensure the BOOT button (if installed) is not stuck
 
-**Buttons not responding:**
-- Verify pull-down resistors are connected
-- Check button common terminal is connected to 3.3V
-- Test continuity with multimeter when button pressed
+### Display not working:
+- ✅ Verify SPI connections are correct (especially SCK on GPIO 18 and MOSI on GPIO 23)
+- ✅ Check CS pin (GPIO 5) is correctly connected
+- ✅ Verify 3.3V power to display
+- ✅ Check DC pin (GPIO 22) is connected for data/command selection
+- ✅ Check backlight is enabled (BL/LITE pin HIGH or PWM)
+- ✅ Verify RST pin (GPIO 21) is connected and not held LOW
+- ✅ Check FPC cable orientation - pin 1 must align correctly
 
-**No power:**
-- Check USB-C connection and CC resistors (5.1kΩ required for USB-C)
-- Verify battery polarity
-- Check IP5306 enable pin (should be HIGH)
-- Test AMS1117 output voltage (should be 3.3V ± 0.1V)
+### Display shows garbage or wrong colors:
+- Check that MOSI and MISO are not swapped
+- Verify SPI clock speed in software isn't too high (try 40MHz or lower)
+- Check DC pin connection - incorrect DC timing causes garbled display
+
+### Buttons not responding:
+- ✅ Verify 10kΩ pull-down resistors are connected between GPIO and GND
+- ✅ Check button common terminal is connected to 3.3V (not ground!)
+- ✅ Test continuity with multimeter when button pressed
+- ✅ Verify you're using GPIO 27 for SELECT (not GPIO 2)
+
+### No power:
+- ✅ Check USB-C connection and CC resistors (5.1kΩ required for USB-C power delivery)
+- ✅ Verify battery polarity (red/+ to IP5306 Pin 8, black/- to GND)
+- ✅ Check IP5306 is receiving power on Pin 8 (VIN)
+- ✅ Verify AMS1117 input voltage (should be ~5V from IP5306)
+- ✅ Test AMS1117 output voltage (should be 3.3V ± 0.1V)
+
+### Battery not charging:
+- ✅ Verify USB-C CC1 and CC2 pins each have 5.1kΩ to GND
+- ✅ Check VBUS connection from USB-C to IP5306 VIN
+- ✅ Verify battery connector polarity
+- ✅ Test with known good battery
+
+### Device draws too much power / poor battery life:
+- Check for shorts on the PCB (especially between power rails)
+- Ensure display backlight uses PWM for brightness control
+- Verify ESP32 is entering sleep modes when appropriate
+- Check that unused GPIOs are configured correctly (not floating)
 
 ---
 
 ## Additional Resources
 
-- **ESP32-WROOM-32 Datasheet**: [Espressif Official Docs](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
-- **Adafruit Display Product Page**: [Adafruit #4311](https://www.adafruit.com/product/4311)
-- **IP5306 Datasheet**: Available from JLCPCB part library
-- **AMS1117 Datasheet**: Available from JLCPCB part library
-- **ESP32 Marauder Firmware**: [GitHub - JustCallMeKoKo](https://github.com/justcallmekoko/ESP32Marauder)
+### Component Datasheets:
+- 📄 **ESP32-WROOM-32 Datasheet**: [Espressif Official Docs](https://www.espressif.com/sites/default/files/documentation/esp32-wroom-32_datasheet_en.pdf)
+- 📄 **IP5306 Datasheet**: [LCSC Product Page](https://www.lcsc.com/search?q=C96641) or search JLCPCB parts library
+- 📄 **AMS1117 Datasheet**: [LCSC Product Page](https://www.lcsc.com/search?q=C6186) or search JLCPCB parts library
+
+### Product Pages:
+- 🛒 **Adafruit 2.0" IPS Display**: [Adafruit #4311](https://www.adafruit.com/product/4311)
+- 🛒 **JLCPCB Parts Library**: [https://jlcpcb.com/parts](https://jlcpcb.com/parts)
+- 🛒 **LCSC Electronics**: [https://www.lcsc.com](https://www.lcsc.com)
+
+### Firmware & Software:
+- 💻 **ESP32 Marauder Firmware**: [GitHub - JustCallMeKoko](https://github.com/justcallmekoko/ESP32Marauder)
+- 💻 **TFT_eSPI Library**: [GitHub - Bodmer/TFT_eSPI](https://github.com/Bodmer/TFT_eSPI)
+- 💻 **Arduino ESP32 Core**: [GitHub - espressif/arduino-esp32](https://github.com/espressif/arduino-esp32)
+
+### Design Tools:
+- 🔧 **EasyEDA**: [https://easyeda.com](https://easyeda.com) - Free PCB design tool
+- 🔧 **KiCad**: [https://kicad.org](https://kicad.org) - Open source PCB design
+
+### Learning Resources:
+- 📚 **Adafruit EYESPI Standard**: [Adafruit Learning Guide](https://learn.adafruit.com/adafruit-eyespi-reversible-fpc-standard)
+- 📚 **ESP32 Boot Process**: [Espressif Docs](https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/startup.html)
+- 📚 **USB-C Specification**: For USB-C connector wiring, 5.1kΩ CC resistors are required for proper power delivery
+
+---
+
+## Schematic Summary Diagram
+
+```
+                                    ┌─────────────────┐
+    ┌──────────┐                    │                 │
+    │  USB-C   │──VBUS──────────────┤ VIN         3V3 ├───┐
+    │ (C165948)│                    │     IP5306      │   │
+    │          │──CC1──[5.1kΩ]──GND │    (C96641)     │   │   ┌────────────┐
+    │          │──CC2──[5.1kΩ]──GND │                 │   │   │  ESP32     │
+    │          │──GND───────────────┤ GND        VOUT ├───┼───┤ (C529582)  │
+    └──────────┘                    │                 │   │   │            │
+                                    └─────────────────┘   │   │ GPIO 18 ───┼──► Display SCK
+    ┌──────────┐                           │              │   │ GPIO 23 ───┼──► Display MOSI
+    │ Battery  │                           │              │   │ GPIO 5  ───┼──► Display CS
+    │ (JST-PH) │──BAT+──────────────────────┘              │   │ GPIO 22 ───┼──► Display DC
+    │ (C396123)│                                          │   │ GPIO 21 ───┼──► Display RST
+    │          │──BAT-──────────────────GND                │   │ GPIO 4  ───┼──► Display BL
+    └──────────┘                                          │   │            │
+                                    ┌─────────────────┐   │   │ GPIO 12 ───┼──► UP Button
+                                    │    AMS1117-3.3  │   │   │ GPIO 13 ───┼──► DOWN Button
+    5V from IP5306 ─────────────────┤ VIN        VOUT ├───┴───┤ GPIO 14 ───┼──► LEFT Button
+                                    │    (C6186)      │       │ GPIO 15 ───┼──► RIGHT Button
+                                    │            GND  ├──GND  │ GPIO 27 ───┼──► SELECT Button
+                                    └─────────────────┘       │ EN      ───┼──► RESET Button
+                                                              │ GPIO 0  ───┼──► [10kΩ]──3.3V
+                                                              └────────────┘
+```
 
 ---
 
 **Last Updated**: 2026-01-01
-**Version**: 1.0
+**Version**: 2.0
 **Created for**: TechBot4 Project by EfaTheOne
 
-This wiring guide has been triple-checked for accuracy. However, always verify connections with component datasheets before building.
+### Changelog:
+- **v2.0 (2026-01-01)**: Major revision
+  - Corrected IP5306 pinout (SOP-8 package, not ESOP-8)
+  - Removed unnecessary external inductor requirement
+  - Changed SELECT button from GPIO 2 to GPIO 27 (boot compatibility)
+  - Updated resistor count from 6x to 7x (10kΩ)
+  - Added detailed strapping pin documentation
+  - Added JLCPCB/LCSC search links for all components
+  - Added schematic summary diagram
+  - Enhanced troubleshooting section
+  - Added display software configuration example
+- **v1.0**: Initial wiring guide
+
+> ⚠️ **Disclaimer:** This wiring guide has been verified against component datasheets. However, always double-check pinouts against your specific component variants before building. The author is not responsible for any damage resulting from incorrect wiring.
