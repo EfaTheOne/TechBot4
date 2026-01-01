@@ -3,6 +3,11 @@ Part List
 -https://www.adafruit.com/product/4311?srsltid=AfmBOopb0Z9bzDvCusqRwQuAI18eDbWa0XD_RDmqvqr7_hGu1QP7qzMz
 
 -https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
+Checked Source Parts:
+
+IP5306-I2C LCSC Part#:C488349
+
+
 
 Unchecked Sourced Parts:</br>
 -Power Management (ESOP-8), PCBA Number: C96641 1x</br>
