@@ -1,32 +1,10 @@
 # TechBot4
 Part List
 -https://www.adafruit.com/product/4311?srsltid=AfmBOopb0Z9bzDvCusqRwQuAI18eDbWa0XD_RDmqvqr7_hGu1QP7qzMz
+
 -https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
-Parts needed to be sourced:
 
--IP5306 with 12C
-
--1R0 Inductor
-
--22µF Capacitor 2x
-
--10µF Capacitor 3x
-
--0.1µF Capacitor
-
--1kΩ Resistor
-
--JST-PH 2-Pin
-
--Type-C Port
-
--5.1kΩ Resistor 2x
-
--AMS1117-3.3
-
--Battery, 3.7v 1500mAh
-
-Unchecked Sourced Parts:
+Unchecked Sourced Parts:</br>
 -Power Management (ESOP-8), PCBA Number: C96641 </br>
 
 (Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))</br>
@@ -78,10 +56,10 @@ The TechBot4 is a ESP32 WROOM 32 N8 based pen testing tool. It acts exactly like
 # Purpose
 I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. The TechBot4 is such a cool project that I have been excited about and is the fourth version of the TechBot series.
 
-# TechBot's
+# TechBot's</br>
 
-TechBot1
--OLED 0.96 inch screen
+TechBot1</br>
+-OLED 0.96 inch screen</br>
 -DHT11 sensor to read temperature and humidity
 -Buzzer to play simple tracks like Imagine Dragons and Pink Panther
 -Joystick to navigate to different screens
