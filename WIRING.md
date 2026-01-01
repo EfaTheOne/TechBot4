@@ -204,9 +204,9 @@ The Adafruit 2.0" 320x240 IPS display uses an EYESPI 40-pin FPC connector (0.5mm
 
 ### 6x Tactile Switches (6x6mm Through-Hole, C34260)
 
-Each button is wired with a pull-down resistor configuration for stable readings.
+Each button is wired with a pull-down resistor configuration for stable readings (except the RESET button which uses a pull-up).
 
-#### Button Schematic (for each button):
+#### Button Schematic (for navigation buttons):
 ```
         3.3V
          |
@@ -215,6 +215,19 @@ Each button is wired with a pull-down resistor configuration for stable readings
          ├─────→ ESP32 GPIO Pin
          |
       [10kΩ Resistor]
+         |
+        GND
+```
+
+#### RESET Button Schematic:
+```
+        3.3V
+         |
+      [1kΩ Resistor]
+         |
+         ├─────→ ESP32 EN Pin
+         |
+      [Button]
          |
         GND
 ```
@@ -242,19 +255,19 @@ Each button is wired with a pull-down resistor configuration for stable readings
 - Other terminal → **ESP32 Pin 9 (GPIO 2)** AND **10kΩ resistor (R7)** → **GND**
 
 **Button 6 - RESET:**
-- One terminal → **3.3V**
-- Other terminal → **ESP32 Pin 3 (EN)** AND **10kΩ resistor (R8)** → **GND**
-- **NOTE:** EN pin needs external 10kΩ pull-up to 3.3V for normal operation. Button pulls it LOW to reset.
+- One terminal → **GND**
+- Other terminal → **ESP32 Pin 3 (EN)**
+- **NOTE:** EN pin needs external pull-up resistor (use the 1kΩ resistor R8) from EN to 3.3V for normal operation. Button pulls it LOW to reset.
 
-#### Pull-Down Resistor Summary:
-- **R3 (10kΩ)**: GPIO 12 to GND
-- **R4 (10kΩ)**: GPIO 13 to GND
-- **R5 (10kΩ)**: GPIO 14 to GND
-- **R6 (10kΩ)**: GPIO 15 to GND
-- **R7 (10kΩ)**: GPIO 2 to GND
-- **R8 (10kΩ)**: EN to GND (for reset button)
+#### Resistor Summary:
+- **R3 (10kΩ)**: GPIO 12 to GND (pull-down)
+- **R4 (10kΩ)**: GPIO 13 to GND (pull-down)
+- **R5 (10kΩ)**: GPIO 14 to GND (pull-down)
+- **R6 (10kΩ)**: GPIO 15 to GND (pull-down)
+- **R7 (10kΩ)**: GPIO 2 to GND (pull-down)
+- **R8 (1kΩ)**: EN to 3.3V (pull-up for normal operation)
 
-**Important:** For the RESET button, the EN pin should also have a pull-up resistor (can use the 1kΩ from parts list) to 3.3V to keep it HIGH during normal operation.
+**Important:** The RESET button connects EN to GND when pressed. The 1kΩ pull-up resistor keeps EN HIGH during normal operation.
 
 ---
 
@@ -266,7 +279,7 @@ Each button is wired with a pull-down resistor configuration for stable readings
 |-------|----------------|----------|------------|
 | 1     | GND            | Ground   | System Ground |
 | 2     | 3V3            | Power    | AMS1117 3.3V Output + Capacitors |
-| 3     | EN             | Reset    | 10kΩ pull-up to 3.3V + Reset Button |
+| 3     | EN             | Reset    | 1kΩ pull-up to 3.3V + Reset Button to GND |
 | 4-7   | GPIO 36-39     | Input Only | Not used (can be used for ADC) |
 | 8     | GPIO 0         | Boot Mode | 10kΩ pull-up to 3.3V (normal boot) |
 | 9     | GPIO 2         | Button   | SELECT Button (with 10kΩ pull-down) |
@@ -332,12 +345,12 @@ Use this checklist to verify your connections:
 - [ ] LEFT button → GPIO 14 (with 10kΩ pull-down)
 - [ ] RIGHT button → GPIO 15 (with 10kΩ pull-down)
 - [ ] SELECT button → GPIO 2 (with 10kΩ pull-down)
-- [ ] RESET button → EN (with 10kΩ pull-down and 1kΩ pull-up)
+- [ ] RESET button → EN to GND (with 1kΩ pull-up to 3.3V)
 - [ ] All button common terminals → 3.3V
 
 ### Boot Configuration:
 - [ ] GPIO 0 → 10kΩ pull-up to 3.3V (for normal boot)
-- [ ] EN → 10kΩ pull-up to 3.3V (for normal operation)
+- [ ] EN → 1kΩ pull-up to 3.3V (for normal operation)
 
 ---
 
@@ -373,7 +386,7 @@ Use this checklist to verify your connections:
 ## Troubleshooting Tips
 
 **ESP32 won't boot:**
-- Check EN pin has pull-up resistor (1kΩ or 10kΩ to 3.3V)
+- Check EN pin has pull-up resistor (1kΩ to 3.3V)
 - Check GPIO 0 is pulled HIGH (not floating or LOW during boot)
 - Verify 3.3V power supply is stable and within 3.0-3.6V range
 
