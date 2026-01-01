@@ -68,12 +68,4 @@ The TechBot4 is a ESP32 WROOM 32 N8 based pen testing tool. It acts exactly like
 # Purpose
 I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. The TechBot4 is such a cool project that I have been excited about and is the fourth version of the TechBot series.
 
-# TechBot's</br>
-
-TechBot1</br>
--OLED 0.96 inch screen</br>
--DHT11 sensor to read temperature and humidity
--Buzzer to play simple tracks like Imagine Dragons and Pink Panther
--Joystick to navigate to different screens
--
 
