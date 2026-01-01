@@ -5,47 +5,47 @@ Part List
 -https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
 
 Unchecked Sourced Parts:</br>
--Power Management (ESOP-8), PCBA Number: C96641 </br>
+-Power Management (ESOP-8), PCBA Number: C96641 1x</br>
 
 (Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))</br>
 
--Inductor (1.0uH, CD43, ~2.5A) PCBA Number C116556</br>
+-Inductor (1.0uH, CD43, ~2.5A) PCBA Number C116556 1x</br>
 
 (Inductor	1R0 (1.0µH, CD43, ~2.5A)	1	C116556	Power Inductor for IP5306 (SW Pin))</br>
 
--Regulator (SOT-223) PCBA Number: C6186</br>
+-Regulator (SOT-223) PCBA Number: C6186 1x</br>
 
 (Regulator	AMS1117-3.3 (SOT-223)	1	C6186	Steps down 5V to 3.3V for ESP32)</br>
 
--Capacitor (0603, X5R, 10V) PCBA Number: C96446</br>
+-Capacitor (0603, X5R, 10V) PCBA Number: C96446 2x</br>
 
 (Capacitor	22µF (0603, X5R, 10V)	2	C96446	IP5306 Input/Output Filtering))</br>
 
--Capacitor (0603, X5R, 16V) PCBA Number: C19702</br>
+-Capacitor (0603, X5R, 16V) PCBA Number: C19702 3x</br>
 
 (Capacitor	10µF (0603, X5R, 16V)	3	C19702	AMS1117 In/Out, ESP32 Power)</br>
 
--Capacitor (0603, X7R, 50V) PCBA Number: C14663</br>
+-Capacitor (0603, X7R, 50V) PCBA Number: C14663 1x</br>
 
 (Capacitor	0.1µF (0603, X7R, 50V)	1	C14663	ESP32 Decoupling / Filter)</br>
 
--Resistor (0603, 1%, 5.1kΩ) PCBA Number: C23178</br>
+-Resistor (0603, 1%, 5.1kΩ) PCBA Number: C23178 2x</br>
 
 (Resistor	5.1kΩ (0603, 1%)	2	C23178	USB-C CC Pin Pull-downs (Required for C-to-C charging))</br>
 
--Resistor (6030, 1%, 1kΩ) PCBA Number: C21190</br>
+-Resistor (6030, 1%, 1kΩ) PCBA Number: C21190 1x</br>
 
 (Resistor	1kΩ (0603, 1%)	1	C21190	LED limiting or EN Pull-up (See notes))</br>
 
--USB C Port (16-Pin, SMD) PCBA Number: C165948</br>
+-USB C Port (16-Pin, SMD) PCBA Number: C165948 1x</br>
 
 (USB Port	USB Type-C 16-Pin (SMD)	1	C165948	Charging Input (Korean Hroparts))</br>
 
--JST-PH Connector (Vertical SMD) PCBA Number: C396123</br>
+-JST-PH Connector (Vertical SMD) PCBA Number: C396123 1x</br>
 
 (Connector	JST-PH 2-Pin (Vertical SMD)	1	C396123	Battery Connector)</br>
 
--ESP32 (ESP32-WROOM-32-N8) PCBA Number: C529582
+-ESP32 (ESP32-WROOM-32-N8) PCBA Number: C529582 1x
 
 (ESP32	ESP32-WROOM-32-N8	1	C529582	Microcontroller (User specified))</br>
 
