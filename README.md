@@ -28,9 +28,10 @@ Parts needed to be sourced:
 
 Unchecked Sourced Parts:
 -Power Management (ESOP-8), PCBA Number: C96641 
+(Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))
+-Inductor (1.0uH, CD43, ~2.5A) PCBA Number C116556
+(Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))
 
-
-Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard)
 Inductor	1R0 (1.0µH, CD43, ~2.5A)	1	C116556	Power Inductor for IP5306 (SW Pin)
 Regulator	AMS1117-3.3 (SOT-223)	1	C6186	Steps down 5V to 3.3V for ESP32
 Capacitor	22µF (0603, X5R, 10V)	2	C96446	IP5306 Input/Output Filtering
