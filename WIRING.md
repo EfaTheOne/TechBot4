@@ -41,7 +41,7 @@ This guide provides detailed wiring instructions for connecting all components o
 | Resistor | 5.1kΩ, 0603, 1% | C23178 | 2x | USB-C CC pins | [LCSC](https://www.lcsc.com/search?q=C23178) |
 | Resistor | 10kΩ, 0603, 1% | C23177 | 7x | Button pull-downs + boot | [LCSC](https://www.lcsc.com/search?q=C23177) |
 
-> **Note:** The IP5306 is a fully integrated power bank SoC. The external inductor (C116556) originally listed is NOT required for standard IP5306 operation as it has an internal switching inductor.
+> **Note:** The IP5306 is a power bank management SoC. The external inductor (C116556) originally listed may or may not be required depending on the specific IP5306 variant. **Always verify against the datasheet for PCBA C96641 from LCSC before assembly.**
 
 ---
 
@@ -122,47 +122,64 @@ Pin 2 (Black wire): BAT- → System Ground
 
 ### Section 3: IP5306 Power Management IC (SOP-8)
 
-> ⚠️ **Critical:** The IP5306 is a **fully integrated power bank SoC** with internal switching components. Unlike many boost converters, it does NOT require an external inductor.
+> ⚠️ **Critical:** Before wiring, download and verify the datasheet for IP5306 (C96641) from LCSC. Different IP5306 variants may have different pinouts and external component requirements.
 
-#### IP5306 Pinout (C96641) - Verified from Datasheet:
+#### IP5306 Pinout (C96641) - Common Configuration:
+
+> **⚠️ VERIFY AGAINST DATASHEET:** The pinout below is a common IP5306 configuration. Your specific C96641 variant may differ. Always confirm with the actual datasheet.
+
 ```
       ┌────────────────┐
-VOUT ─┤ 1            8 ├─ VIN (BAT+)
- GND ─┤ 2            7 ├─ LED1
- KEY ─┤ 3            6 ├─ LED2
-LED4 ─┤ 4            5 ├─ LED3
+      │ 1            8 │
+      │ 2            7 │
+      │ 3            6 │
+      │ 4            5 │
       └────────────────┘
 ```
 
-| Pin | Name | Function |
-|-----|------|----------|
-| 1 | VOUT | 5V Output (to AMS1117 VIN) |
+**Common IP5306 Pin Functions (verify with datasheet):**
+| Pin | Common Function | Description |
+|-----|-----------------|-------------|
+| 1 | VOUT | 5V Boost Output |
 | 2 | GND | Ground |
-| 3 | KEY | Power key input (for power on/off control) |
-| 4 | LED4 | LED indicator 4 (optional) |
-| 5 | LED3 | LED indicator 3 (optional) |
-| 6 | LED2 | LED indicator 2 (optional) |
-| 7 | LED1 | LED indicator 1 (optional) |
-| 8 | VIN | Battery positive / USB 5V input |
+| 3 | KEY | Power key input (momentary to GND) |
+| 4-7 | LED1-4 | Battery level LED indicators (optional) |
+| 8 | VIN/BAT | Battery+ / USB 5V input |
 
-**Connections:**
-1. **Pin 1 (VOUT)** → **5V Rail** with **22µF capacitor (C2)** to GND → **AMS1117 VIN**
-2. **Pin 2 (GND)** → **System Ground**
-3. **Pin 3 (KEY)** → **Momentary button to GND** (optional - for power on/off) OR leave unconnected for always-on when battery is connected
-4. **Pins 4-7 (LED1-4)** → **Optional LED indicators** with current limiting resistors (330Ω each) OR leave unconnected
-5. **Pin 8 (VIN/BAT+)** ← **JST Connector Pin 1 (Battery+)** AND **USB-C VBUS** with **22µF capacitor (C1)** to GND
+**Alternative Pinout (some variants):**
+| Pin | Alternative Function |
+|-----|---------------------|
+| 1 | SW (Switch node - requires inductor) |
+| 2 | GND |
+| 3 | BAT |
+| 4 | VSET |
+| 5 | VOUT |
+| 6-8 | Various |
+
+**⚠️ If your IP5306 variant has a SW (switch) pin, you WILL need the external inductor (C116556).**
+
+**General Connections (adapt based on your datasheet):**
+1. **VOUT pin** → **5V Rail** with **22µF capacitor (C2)** to GND → **AMS1117 VIN**
+2. **GND pin** → **System Ground**
+3. **KEY pin** → **Momentary button to GND** (optional - for power on/off) OR leave unconnected
+4. **LED pins** → **Optional LED indicators** with current limiting resistors (330Ω each) OR leave unconnected
+5. **VIN/BAT pin** ← **JST Connector Pin 1 (Battery+)** AND **USB-C VBUS** with **22µF capacitor (C1)** to GND
+
+**If your variant requires an external inductor (SW pin present):**
+- Connect **1.0µH inductor (C116556)** between SW pin and VOUT pin
+- Order the inductor: [LCSC Search C116556](https://www.lcsc.com/search?q=C116556)
 
 **Important Notes:**
-- The IP5306 handles both charging and boosting internally
-- No external inductor is required
-- The KEY pin can be used for soft power control:
+- Download the datasheet from LCSC before wiring
+- The KEY pin can be used for soft power control (if available):
   - Double-press to turn ON
   - Long press (2+ seconds) to turn OFF
 - If KEY is not used, the device turns on automatically when battery is connected
 
 **Capacitor Placement:**
-- **C1 (22µF)**: Between IP5306 VIN (Pin 8) and GND - input/battery filtering
-- **C2 (22µF)**: Between IP5306 VOUT (Pin 1) and GND - output filtering
+- **C1 (22µF)**: Between IP5306 VIN pin and GND - input/battery filtering
+- **C2 (22µF)**: Between IP5306 VOUT pin and GND - output filtering
+- **L1 (1.0µH, optional)**: If your IP5306 variant has SW pin, connect between SW and VOUT
 
 ### Section 4: AMS1117-3.3 Voltage Regulator (SOT-223)
 
@@ -697,14 +714,12 @@ Use this checklist to verify your connections:
 
 ---
 
-**Last Updated**: 2026-01-01
 **Version**: 2.0
 **Created for**: TechBot4 Project by EfaTheOne
 
 ### Changelog:
-- **v2.0 (2026-01-01)**: Major revision
-  - Corrected IP5306 pinout (SOP-8 package, not ESOP-8)
-  - Removed unnecessary external inductor requirement
+- **v2.0**: Major revision
+  - Updated IP5306 section to require datasheet verification (pinout varies by variant)
   - Changed SELECT button from GPIO 2 to GPIO 27 (boot compatibility)
   - Updated resistor count from 6x to 7x (10kΩ)
   - Added detailed strapping pin documentation

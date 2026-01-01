@@ -26,7 +26,7 @@
 - **IP5306** (SOP-8 Package) | PCBA Number: **C96641** | Qty: 1x
   - 🔗 [JLCPCB Search](https://jlcpcb.com/partdetail/InjoinicTech-IP5306/C96641) | [LCSC Search](https://www.lcsc.com/search?q=C96641)
   - Integrated Battery Charger & 5V Boost Converter (2.1A output)
-  - **Note:** This is a fully integrated power bank SoC with internal switching inductor. No external inductor required for standard operation.
+  - **⚠️ Note:** Verify the specific IP5306 variant datasheet before assembly. Some variants may require external components. Consult the C96641 datasheet from LCSC for exact requirements.
 
 #### Voltage Regulator
 - **AMS1117-3.3** (SOT-223) | PCBA Number: **C6186** | Qty: 1x
@@ -69,7 +69,10 @@
 
 1. **IP5306 Package Correction:** The IP5306 uses a **SOP-8** package (not ESOP-8). Verify the package matches your PCB footprint.
 
-2. **Inductor Removed:** The original design included an inductor (C116556) for the IP5306. However, the IP5306 is a **fully integrated power bank SoC** with an internal switching inductor. External inductors are NOT required for standard operation. If you have a different variant requiring external components, consult the specific datasheet.
+2. **IP5306 Verification Required:** The IP5306 (C96641) pinout and external component requirements vary by manufacturer variant. **Before assembly, download the datasheet from LCSC (search C96641) and verify:**
+   - Exact pinout for your specific variant
+   - Whether external inductor is required
+   - Recommended capacitor values
 
 3. **Resistor Count Updated:** Changed from 6x to 7x 10kΩ resistors. You need:
    - 5x for button pull-downs (UP, DOWN, LEFT, RIGHT, SELECT)
