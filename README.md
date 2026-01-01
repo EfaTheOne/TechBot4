@@ -5,21 +5,21 @@ Part List
 -https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
 
 Unchecked Sourced Parts:</br>
--Power Management (ESOP-8), PCBA Number: C96641 1x</br>
+-Power Management (ESOP-8), PCBA Number: C181692 1x</br>
 
-(Power Management	IP5306 (ESOP-8)	1	C96641	Battery Charger & 5V Boost (Standard))</br>
+(Power Management	IP5306 (ESOP-8)	1	C181692	Battery Charger & 5V Boost (Standard))</br>
 
--Inductor (1.0uH, CD43, ~2.5A) PCBA Number C116556 1x</br>
+-Inductor (1.0uH, CD43, ~2.5A) PCBA Number: C409617 1x</br>
 
-(Inductor	1R0 (1.0µH, CD43, ~2.5A)	1	C116556	Power Inductor for IP5306 (SW Pin))</br>
+(Inductor	1R0 (1.0µH, CD43, ~2.5A)	1	C409617	Power Inductor for IP5306 (SW Pin))</br>
 
 -Regulator (SOT-223) PCBA Number: C6186 1x</br>
 
 (Regulator	AMS1117-3.3 (SOT-223)	1	C6186	Steps down 5V to 3.3V for ESP32)</br>
 
--Capacitor (0603, X5R, 10V) PCBA Number: C96446 2x</br>
+-Capacitor (0603, X5R, 10V) PCBA Number: C59461 2x</br>
 
-(Capacitor	22µF (0603, X5R, 10V)	2	C96446	IP5306 Input/Output Filtering))</br>
+(Capacitor	22µF (0603, X5R, 10V)	2	C59461	IP5306 Input/Output Filtering))</br>
 
 -Capacitor (0603, X5R, 16V) PCBA Number: C19702 3x</br>
 
@@ -33,7 +33,7 @@ Unchecked Sourced Parts:</br>
 
 (Resistor	5.1kΩ (0603, 1%)	2	C23178	USB-C CC Pin Pull-downs (Required for C-to-C charging))</br>
 
--Resistor (6030, 1%, 1kΩ) PCBA Number: C21190 1x</br>
+-Resistor (0603, 1%, 1kΩ) PCBA Number: C21190 1x</br>
 
 (Resistor	1kΩ (0603, 1%)	1	C21190	LED limiting or EN Pull-up (See notes))</br>
 
