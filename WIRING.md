@@ -10,8 +10,9 @@ This guide provides detailed wiring instructions for connecting all components o
 3. [Power System Wiring](#power-system-wiring)
 4. [Display Wiring](#display-wiring)
 5. [Button Wiring](#button-wiring)
-6. [Complete Pin Assignment Table](#complete-pin-assignment-table)
-7. [Wiring Checklist](#wiring-checklist)
+6. [Boot Configuration](#boot-configuration)
+7. [Complete Pin Assignment Table](#complete-pin-assignment-table)
+8. [Wiring Checklist](#wiring-checklist)
 
 ---
 
@@ -33,7 +34,7 @@ This guide provides detailed wiring instructions for connecting all components o
 - **0.1µF Capacitor** (C14663): 1x - ESP32 decoupling
 - **5.1kΩ Resistors** (C23178): 2x - USB-C CC pins
 - **1kΩ Resistor** (C21190): 1x - LED/EN pull-up
-- **10kΩ Resistors** (C23177): 6x - Button pull-downs
+- **10kΩ Resistors** (C23177): 6x - 5 for button pull-downs, 1 for GPIO 0 pull-up
 
 ---
 
@@ -260,14 +261,28 @@ Each button is wired with a pull-down resistor configuration for stable readings
 - **NOTE:** EN pin needs external pull-up resistor (use the 1kΩ resistor R8) from EN to 3.3V for normal operation. Button pulls it LOW to reset.
 
 #### Resistor Summary:
-- **R3 (10kΩ)**: GPIO 12 to GND (pull-down)
-- **R4 (10kΩ)**: GPIO 13 to GND (pull-down)
-- **R5 (10kΩ)**: GPIO 14 to GND (pull-down)
-- **R6 (10kΩ)**: GPIO 15 to GND (pull-down)
-- **R7 (10kΩ)**: GPIO 2 to GND (pull-down)
+- **R3 (10kΩ)**: GPIO 12 to GND (pull-down for UP button)
+- **R4 (10kΩ)**: GPIO 13 to GND (pull-down for DOWN button)
+- **R5 (10kΩ)**: GPIO 14 to GND (pull-down for LEFT button)
+- **R6 (10kΩ)**: GPIO 15 to GND (pull-down for RIGHT button)
+- **R7 (10kΩ)**: GPIO 2 to GND (pull-down for SELECT button)
 - **R8 (1kΩ)**: EN to 3.3V (pull-up for normal operation)
+- **R9 (10kΩ)**: GPIO 0 to 3.3V (pull-up for normal boot mode)
 
 **Important:** The RESET button connects EN to GND when pressed. The 1kΩ pull-up resistor keeps EN HIGH during normal operation.
+
+---
+
+## Boot Configuration
+
+For the ESP32 to boot normally into the main program, GPIO 0 must be HIGH during boot. This requires a pull-up resistor:
+
+**GPIO 0 Boot Mode Configuration:**
+- **10kΩ resistor (R9)** from **GPIO 0 (Pin 8)** to **3.3V**
+- This ensures GPIO 0 is HIGH during boot, allowing normal program execution
+- If GPIO 0 is LOW during boot, the ESP32 enters firmware download mode
+
+**Important:** Do NOT connect a button to GPIO 0 unless you want to be able to force firmware download mode. For normal operation, just the pull-up resistor is sufficient.
 
 ---
 
