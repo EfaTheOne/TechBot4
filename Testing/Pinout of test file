@@ -6,3 +6,6 @@ D/C	Data/Command	GPIO 17	Command/Data Toggle
 RES	Reset	GPIO 16	Hardware Reset
 VCC	3.3V	3V3	Logic Power
 GND	Ground	GND	Power Ground
+JOY_X 36  // VRx
+JOY_Y 39  // VRy
+JOY_SW 34 // SW (Button)
