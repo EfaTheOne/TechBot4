@@ -158,7 +158,9 @@ void wifi_scan_aps() {
   // Show first few APs
   for (int i = 0; i < min(4, ap_count); i++) {
     display.setCursor(0, 14 + i * 12);
-    display.print(ap_list[i].ssid.substring(0, 14));
+    String ssid = ap_list[i].ssid;
+    if (ssid.length() > 14) ssid = ssid.substring(0, 14);
+    display.print(ssid);
     display.print(F(" "));
     display.print(ap_list[i].rssi);
   }
@@ -230,7 +232,9 @@ void wifi_deauth_target(uint8_t* mac) {
      memcpy(deauth_template + 16, ap_list[0].bssid, 6);
      wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[0].channel);
      display.println(F("Deauth sent to"));
-     display.println(ap_list[0].ssid.substring(0, 16));
+     String ssid = ap_list[0].ssid;
+     if (ssid.length() > 16) ssid = ssid.substring(0, 16);
+     display.println(ssid);
      display.display();
   }
 }
@@ -324,6 +328,13 @@ void bluetooth_ble_scan() {
   display.println(F("(5 seconds)"));
   display.display();
   
+  if (pBLEScan == nullptr) {
+    display.println(F("BLE not initialized!"));
+    display.display();
+    Serial.println(F("BLE scan failed: pBLEScan is null"));
+    return;
+  }
+  
   BLEScanResults foundDevices = pBLEScan->start(5, false);
   int count = foundDevices.getCount();
   
@@ -339,7 +350,9 @@ void bluetooth_ble_scan() {
     BLEAdvertisedDevice device = foundDevices.getDevice(i);
     display.setCursor(0, 14 + i * 12);
     if (device.haveName()) {
-      display.print(device.getName().substring(0, 16).c_str());
+      String name = device.getName().c_str();
+      if (name.length() > 16) name = name.substring(0, 16);
+      display.print(name);
     } else {
       display.print(F("[Unknown]"));
     }
