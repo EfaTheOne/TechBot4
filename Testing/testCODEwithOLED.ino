@@ -42,8 +42,8 @@
 #define OLED_CS   5
 #define OLED_RST  16
 
-#define JOY_X     33
-#define JOY_Y     32
+#define JOY_X     36
+#define JOY_Y     39
 #define JOY_SW    34
 
 #define MAX_APS 100
@@ -263,22 +263,42 @@ void sniffing_capture_eapol() {
 void ui_draw_menu() {
   display.clearDisplay();
   display.setTextSize(1);
-  display.setCursor(0, 0);
-  display.println(F("--- MARAUDER MENU ---"));
+  display.setTextColor(SSD1306_WHITE);
   
+  // Header
+  display.setCursor(10, 0);
+  display.println(F("MARAUDER MENU"));
+  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+  
+  // Menu items
   for (int i = 0; i < 5; i++) {
     int idx = (current_menu_index + i) % menu_count;
-    if (i == 0) display.print(F("> ")); 
-    else display.print(F("  "));
+    display.setCursor(0, 14 + i * 10);
+    if (i == 0) {
+      display.fillRect(0, 13, SCREEN_WIDTH, 10, SSD1306_WHITE);
+      display.setTextColor(SSD1306_BLACK);
+    } else {
+      display.setTextColor(SSD1306_WHITE);
+    }
+    display.print(F(" "));
     display.println(menu_items[idx]);
   }
+  display.setTextColor(SSD1306_WHITE);
   display.display();
 }
 
 void ui_select_item() {
   display.clearDisplay();
-  display.setCursor(0, 20);
-  display.print(F("Run: "));
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  
+  // Header
+  display.setCursor(20, 0);
+  display.println(F("RUNNING..."));
+  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+  
+  // Selected item
+  display.setCursor(0, 26);
   display.println(menu_items[current_menu_index]);
   display.display();
   
@@ -310,6 +330,9 @@ void ui_select_item() {
 // --- MAIN SETUP & LOOP ---
 void setup() {
   Serial.begin(SERIAL_SPEED);
+  
+  // Joystick Button Input (GPIO34 is input-only on ESP32)
+  pinMode(JOY_SW, INPUT);
   
   // OLED Init
   if(!display.begin(SSD1306_SWITCHCAPVCC)) { 
@@ -364,6 +387,7 @@ void loop() {
   int yVal = analogRead(JOY_Y);
   int swVal = digitalRead(JOY_SW);
   static unsigned long last_input = 0;
+  static unsigned long last_btn = 0;
   
   if (millis() - last_input > 200) {
     if (yVal < 1000) { // UP
@@ -377,5 +401,11 @@ void loop() {
        ui_draw_menu();
        last_input = millis();
     }
+  }
+  
+  // Joystick button press (active LOW)
+  if (swVal == LOW && millis() - last_btn > 300) {
+    ui_select_item();
+    last_btn = millis();
   }
 }
