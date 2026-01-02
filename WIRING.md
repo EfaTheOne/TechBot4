@@ -79,49 +79,54 @@ Battery (3.7V) → Power Switch → IP5306 → 5V Boost → XC6220B331MR-G → 3
 
 ### IP5306-I2C Wiring (Battery Management IC)
 
-| IP5306 Pin | Connection | Notes |
-|------------|------------|-------|
-| VIN | USB-C VBUS (5V) | Input from USB-C |
-| VOUT | Power Switch COM | 5V boost output |
-| BAT | Battery + (via JST) | Li-Po positive terminal |
-| GND | Common Ground | Shared ground plane |
-| SDA | ESP32 GPIO21 | I2C Data (optional monitoring) |
-| SCL | ESP32 GPIO22 | I2C Clock (optional monitoring) |
+**Note:** The IP5306-I2C (SOP-8L package, LCSC C488349) has an **integrated inductor** - no external inductor is required.
 
-**Note:** The IP5306-I2C (SOP-8 package, LCSC C488349) has an **integrated inductor** - no external inductor is required.
+| IP5306 Pin | Function | Connection | Notes |
+|------------|----------|------------|-------|
+| Pin 1 | KEY | 10kΩ pull-up to VIN or Power Button | Power on/off control |
+| Pin 2 | LED1 | NC or LED indicator | Battery level indicator |
+| Pin 3 | LED2 | NC or LED indicator | Battery level indicator |
+| Pin 4 | LED3 | NC or LED indicator | Battery level indicator |
+| Pin 5 | LED4/SDA | ESP32 GPIO21 | I2C Data (optional battery monitoring) |
+| Pin 6 | SCL | ESP32 GPIO22 | I2C Clock (optional battery monitoring) |
+| Pin 7 | VIN | USB-C VBUS (5V) | 5V input from USB-C |
+| Pin 8 | BAT/VOUT | Battery + (via JST) / Power Switch COM | Li-Po positive; also 5V boost output |
+| Exposed Pad | GND | Common Ground | Thermal pad - connect to ground plane |
 
 **IP5306 Capacitors:**
-- VIN: 10μF capacitor to GND
-- VOUT: 10μF capacitor to GND
-- BAT: 10μF capacitor to GND
+- Pin 7 (VIN): 10μF capacitor to GND
+- Pin 8 (BAT/VOUT): 10μF capacitor to GND (on battery side)
 
 ### Power Switch (C&K PCM12SMTR) Wiring
 
 | Switch Pin | Connection |
 |------------|------------|
-| COM (Common) | IP5306 VOUT (5V) |
+| COM (Common) | IP5306 Pin 8 (BAT/VOUT - 5V boost output) |
 | NO (Normally Open) | XC6220B331MR-G VIN |
 
-**Note:** The switch controls the 5V output from IP5306 going to the 3.3V regulator. This allows the ESP32 to be completely powered off while still allowing battery charging via USB-C.
+**Note:** The switch controls the 5V boost output from IP5306 Pin 8 going to the 3.3V regulator. This allows the ESP32 to be completely powered off while still allowing battery charging via USB-C.
 
 ### XC6220B331MR-G (3.3V LDO) Wiring
 
-| LDO Pin | Connection | Notes |
-|---------|------------|-------|
-| VIN | Power Switch Output (5V) | From IP5306 via switch |
-| VOUT | 3.3V Rail | Powers ESP32, Display, SD Card |
-| GND | Common Ground | Shared ground plane |
-| CE (Chip Enable) | VIN or 3.3V | Tie high to enable |
+**Package:** SOT-25-5 (JLCPCB Part #C86534)
+
+| LDO Pin | Function | Connection | Notes |
+|---------|----------|------------|-------|
+| Pin 1 | VSS (GND) | Common Ground | Shared ground plane |
+| Pin 2 | VIN | Power Switch Output (5V) | From IP5306 via switch |
+| Pin 3 | VOUT | 3.3V Rail | Powers ESP32, Display, SD Card |
+| Pin 4 | CE | VIN (tie high) | Chip Enable - active high |
+| Pin 5 | NC | Not Connected | No connection |
 
 **LDO Capacitors:**
-- VIN: 10μF capacitor to GND
-- VOUT: 10μF + 100nF capacitors to GND
+- Pin 2 (VIN): 10μF capacitor to GND
+- Pin 3 (VOUT): 10μF + 100nF capacitors to GND
 
 ### Battery Connector (JST S2B-PH-K-S) Wiring
 
 | JST Pin | Connection |
 |---------|------------|
-| Pin 1 (+) | IP5306 BAT |
+| Pin 1 (+) | IP5306 Pin 8 (BAT) |
 | Pin 2 (-) | Common Ground |
 
 ---
@@ -132,35 +137,65 @@ The USB-C connector provides power input for charging and data connection for pr
 
 ### USB-C Connector (HX TYPE-C 16PIN) Wiring
 
-| USB-C Pin | Connection | Notes |
-|-----------|------------|-------|
-| VBUS (A4, B4, A9, B9) | IP5306 VIN | 5V power input |
-| GND (A1, B1, A12, B12) | Common Ground | |
-| CC1 (A5) | 5.1kΩ resistor to GND | USB-C identification |
-| CC2 (B5) | 5.1kΩ resistor to GND | USB-C identification |
-| D+ (A6) | CH340C D+ | USB Data+ |
-| D- (A7) | CH340C D- | USB Data- |
-| SBU1, SBU2 | Not Connected | |
-| TX1, TX2, RX1, RX2 | Not Connected | USB 3.0 (not used) |
+**Package:** HX TYPE-C 16PIN (LCSC Part #C5178539)
 
-**Important:** The 5.1kΩ resistors on CC1 and CC2 identify the device as a UFP (Upstream Facing Port) sink device, enabling proper USB-C power delivery.
+**Physical Pin Layout (Left Side - Top to Bottom):**
+
+| Connector Pin | USB-C Signal | Connection | Notes |
+|---------------|--------------|------------|-------|
+| B12/A1 | GND | Common Ground | Ground pins |
+| B9/A4 | VBUS | IP5306 Pin 7 (VIN) | 5V power input |
+| B8 | SBU2 | NC | Not Connected |
+| A5 | CC1 | 5.1kΩ resistor to GND | USB-C identification |
+| B7 | D- | CH340C Pin 6 (UD-) | USB Data- (duplicate for reversibility) |
+| A6 | D+ | CH340C Pin 5 (UD+) | USB Data+ (duplicate for reversibility) |
+| A7 | D- | CH340C Pin 6 (UD-) | USB Data- (duplicate for reversibility) |
+| B6 | D+ | CH340C Pin 5 (UD+) | USB Data+ (duplicate for reversibility) |
+| A8 | SBU1 | NC | Not Connected |
+| B5 | CC2 | 5.1kΩ resistor to GND | USB-C identification |
+| A9/B4 | VBUS | IP5306 Pin 7 (VIN) | 5V power input |
+| A12/B1 | GND | Common Ground | Ground pins |
+
+**Physical Pin Layout (Right Side - Top to Bottom):**
+
+| Connector Pin | Function | Connection | Notes |
+|---------------|----------|------------|-------|
+| EH Pin 20 | Shield | GND | Housing/Shield ground |
+| EH Pin 19 | Shield | GND | Housing/Shield ground |
+| EH Pin 18 | Shield | GND | Housing/Shield ground |
+| EH Pin 17 | Shield | GND | Housing/Shield ground |
+
+**Important:** The 5.1kΩ resistors on CC1 (A5) and CC2 (B5) identify the device as a UFP (Upstream Facing Port) sink device, enabling proper USB-C power delivery.
+
+**Note:** USB-C has duplicate D+/D- pins for reversible cable support. Connect A6 and B6 together to CH340C Pin 5 (UD+), and connect A7 and B7 together to CH340C Pin 6 (UD-).
 
 ### CH340C Wiring (USB to Serial)
 
-| CH340C Pin | Connection | Notes |
-|------------|------------|-------|
-| VCC | 3.3V Rail | Operating voltage |
-| GND | Common Ground | |
-| D+ | USB-C D+ | USB Data+ |
-| D- | USB-C D- | USB Data- |
-| TXD | ESP32 GPIO3 (RXD0) | CH340 TX → ESP32 RX |
-| RXD | ESP32 GPIO1 (TXD0) | CH340 RX ← ESP32 TX |
-| DTR | Auto-Reset Circuit | For programming |
-| RTS | Auto-Reset Circuit | For programming |
+**Package:** SOP-16 (LCSC Part #C84681)
+
+| CH340C Pin | Function | Connection | Notes |
+|------------|----------|------------|-------|
+| Pin 1 | GND | Common Ground | |
+| Pin 2 | TXD | ESP32 GPIO3 (RXD0) | CH340 TX → ESP32 RX |
+| Pin 3 | RXD | ESP32 GPIO1 (TXD0) | CH340 RX ← ESP32 TX |
+| Pin 4 | V3 | 3.3V Rail (connect to VCC) | When VCC=3.3V, tie V3 to VCC |
+| Pin 5 | UD+ | USB-C D+ | USB Data+ |
+| Pin 6 | UD- | USB-C D- | USB Data- |
+| Pin 7 | NC | Not Connected | Internal oscillator (no crystal needed) |
+| Pin 8 | NC | Not Connected | Internal oscillator (no crystal needed) |
+| Pin 9 | CTS# | NC | Clear to Send (optional) |
+| Pin 10 | DSR# | NC | Data Set Ready (optional) |
+| Pin 11 | RI# | NC | Ring Indicator (optional) |
+| Pin 12 | DCD# | NC | Data Carrier Detect (optional) |
+| Pin 13 | DTR# | Auto-Reset Circuit | Data Terminal Ready - for programming |
+| Pin 14 | RTS# | Auto-Reset Circuit | Request to Send - for programming |
+| Pin 15 | R232 | NC | Reserved |
+| Pin 16 | VCC | 3.3V Rail | Operating voltage |
 
 **CH340C Capacitors:**
-- VCC: 100nF capacitor to GND
-- V3: 100nF capacitor to GND (internal 3.3V regulator)
+- Pin 16 (VCC): 100nF capacitor to GND
+
+**Note:** When operating at 3.3V, Pin 4 (V3) must be connected to Pin 16 (VCC). The internal 3.3V regulator is bypassed in this configuration.
 
 ### Auto-Reset and Auto-Boot Circuit
 
@@ -205,11 +240,11 @@ The auto-reset works as follows:
 
 | Component | Connection |
 |-----------|------------|
-| 100nF Capacitor | Between CH340C DTR and ESP32 EN |
-| Q1 (S8050) Base | CH340C RTS via 1kΩ resistor |
+| 100nF Capacitor | Between CH340C Pin 13 (DTR#) and ESP32 EN |
+| Q1 (S8050) Base | CH340C Pin 14 (RTS#) via 1kΩ resistor |
 | Q1 Collector | ESP32 EN pin |
 | Q1 Emitter | GND |
-| Q2 (S8050) Base | CH340C RTS via 1kΩ resistor |
+| Q2 (S8050) Base | CH340C Pin 14 (RTS#) via 1kΩ resistor |
 | Q2 Collector | ESP32 GPIO0 |
 | Q2 Emitter | GND |
 
@@ -334,8 +369,8 @@ These buttons are used for manual programming mode entry and device reset.
 | GPIO16 | SD CS | SD Card Chip Select | OUTPUT |
 | GPIO18 | SPI CLK | ST7789/SD Clock | OUTPUT |
 | GPIO19 | SPI MISO | SD Card Data Out | INPUT |
-| GPIO21 | I2C SDA | IP5306 (optional) | BIDIRECTIONAL |
-| GPIO22 | I2C SCL | IP5306 (optional) | OUTPUT |
+| GPIO21 | I2C SDA | IP5306 Pin 5 (LED4/SDA) - optional battery monitoring | BIDIRECTIONAL |
+| GPIO22 | I2C SCL | IP5306 Pin 6 (SCL) - optional battery monitoring | OUTPUT |
 | GPIO23 | SPI MOSI | ST7789/SD Data In | OUTPUT |
 | GPIO26 | BTN SELECT | Navigation Button | INPUT (pull-up) |
 | GPIO27 | BTN RIGHT | Navigation Button | INPUT (pull-up) |
@@ -345,24 +380,22 @@ These buttons are used for manual programming mode entry and device reset.
 
 | Rail | Voltage | Components Connected |
 |------|---------|---------------------|
-| Battery | 3.7V | IP5306 BAT pin |
-| VBUS | 5V | IP5306 VIN (from USB-C) |
-| 5V Boost | 5V | From IP5306 VOUT → Switch → LDO VIN |
-| 3.3V | 3.3V | ESP32 VCC, CH340C VCC, Display VCC, SD VCC |
+| Battery | 3.7V | IP5306 Pin 8 (BAT) |
+| VBUS | 5V | IP5306 Pin 7 (VIN) from USB-C |
+| 5V Boost | 5V | From IP5306 Pin 8 (BAT/VOUT) → Switch → LDO Pin 2 (VIN) |
+| 3.3V | 3.3V | ESP32 VCC, CH340C Pin 16 (VCC), Display VCC, SD VCC |
 | GND | 0V | All components (common ground plane) |
 
 ### Capacitor Placement Summary
 
 | Location | Capacitor | Purpose |
 |----------|-----------|---------|
-| IP5306 VIN | 10μF | Input filtering |
-| IP5306 VOUT | 10μF | Output filtering |
-| IP5306 BAT | 10μF | Battery filtering |
-| XC6220 VIN | 10μF | LDO input filtering |
-| XC6220 VOUT | 10μF + 100nF | LDO output filtering |
-| CH340C VCC | 100nF | Decoupling |
-| CH340C V3 | 100nF | Internal regulator |
-| DTR to EN | 100nF | Auto-reset timing |
+| IP5306 Pin 7 (VIN) | 10μF | Input filtering |
+| IP5306 Pin 8 (BAT/VOUT) | 10μF | Battery/Output filtering |
+| XC6220 Pin 2 (VIN) | 10μF | LDO input filtering |
+| XC6220 Pin 3 (VOUT) | 10μF + 100nF | LDO output filtering |
+| CH340C Pin 16 (VCC) | 100nF | Decoupling |
+| CH340C Pin 13 (DTR#) to ESP32 EN | 100nF | Auto-reset timing |
 
 ### Resistor Placement Summary
 
@@ -383,31 +416,32 @@ These buttons are used for manual programming mode entry and device reset.
 Use this checklist to verify all connections before powering on:
 
 ### Power System ✓
-- [ ] Battery JST connector: + to IP5306 BAT, - to GND
-- [ ] USB-C VBUS connected to IP5306 VIN
-- [ ] USB-C GND connected to common ground
-- [ ] USB-C CC1 has 5.1kΩ to GND
-- [ ] USB-C CC2 has 5.1kΩ to GND
-- [ ] IP5306 VOUT connected to switch COM
-- [ ] Switch output connected to XC6220 VIN
-- [ ] XC6220 VOUT provides 3.3V rail
+- [ ] Battery JST Pin 1 (+) to IP5306 Pin 8 (BAT), Pin 2 (-) to GND
+- [ ] USB-C VBUS (A4/B4/A9/B9) connected to IP5306 Pin 7 (VIN)
+- [ ] USB-C GND (A1/B1/A12/B12) connected to common ground
+- [ ] USB-C CC1 (A5) has 5.1kΩ to GND
+- [ ] USB-C CC2 (B5) has 5.1kΩ to GND
+- [ ] IP5306 Pin 8 (BAT/VOUT) connected to switch COM
+- [ ] Switch output connected to XC6220 Pin 2 (VIN)
+- [ ] XC6220 Pin 3 (VOUT) provides 3.3V rail
 - [ ] All power capacitors placed correctly
 
 ### USB Serial ✓
-- [ ] CH340C D+ connected to USB-C D+
-- [ ] CH340C D- connected to USB-C D-
-- [ ] CH340C TXD connected to ESP32 GPIO3 (RXD0)
-- [ ] CH340C RXD connected to ESP32 GPIO1 (TXD0)
-- [ ] CH340C VCC connected to 3.3V
-- [ ] CH340C GND connected to ground
-- [ ] 100nF capacitors on CH340C VCC and V3
+- [ ] CH340C Pin 5 (UD+) connected to USB-C D+ (A6/B6)
+- [ ] CH340C Pin 6 (UD-) connected to USB-C D- (A7/B7)
+- [ ] CH340C Pin 2 (TXD) connected to ESP32 GPIO3 (RXD0)
+- [ ] CH340C Pin 3 (RXD) connected to ESP32 GPIO1 (TXD0)
+- [ ] CH340C Pin 16 (VCC) connected to 3.3V
+- [ ] CH340C Pin 4 (V3) connected to 3.3V (tied to VCC)
+- [ ] CH340C Pin 1 (GND) connected to ground
+- [ ] 100nF capacitor on CH340C Pin 16 (VCC)
 
 ### Auto-Reset Circuit ✓
-- [ ] 100nF capacitor between DTR and EN
-- [ ] Q1 base connected to RTS via 1kΩ
+- [ ] 100nF capacitor between CH340C Pin 13 (DTR#) and EN
+- [ ] Q1 base connected to CH340C Pin 14 (RTS#) via 1kΩ
 - [ ] Q1 collector connected to ESP32 EN
 - [ ] Q1 emitter connected to GND
-- [ ] Q2 base connected to RTS via 1kΩ
+- [ ] Q2 base connected to CH340C Pin 14 (RTS#) via 1kΩ
 - [ ] Q2 collector connected to ESP32 GPIO0
 - [ ] Q2 emitter connected to GND
 - [ ] 10kΩ pull-up on EN to 3.3V
