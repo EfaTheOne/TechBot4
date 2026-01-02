@@ -1,0 +1,8 @@
+OLED Pin	Arduino Signal	ESP32 Pin	Function
+DIN	COPI (MOSI)	GPIO 23	Serial Data Input
+CLK	SCK	GPIO 18	Serial Clock
+CS	CS	GPIO 5	Chip Select
+D/C	Data/Command	GPIO 17	Command/Data Toggle
+RES	Reset	GPIO 16	Hardware Reset
+VCC	3.3V	3V3	Logic Power
+GND	Ground	GND	Power Ground
