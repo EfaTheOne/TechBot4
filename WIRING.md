@@ -147,10 +147,10 @@ The USB-C connector provides power input for charging and data connection for pr
 | B9/A4 | VBUS | IP5306 Pin 7 (VIN) | 5V power input |
 | B8 | SBU2 | NC | Not Connected |
 | A5 | CC1 | 5.1kΩ resistor to GND | USB-C identification |
-| B7 | D- | CH340C Pin 6 (UD-) | USB Data- |
-| A6 | D+ | CH340C Pin 5 (UD+) | USB Data+ |
-| A7 | D- | CH340C Pin 6 (UD-) | USB Data- (active side) |
-| B6 | D+ | CH340C Pin 5 (UD+) | USB Data+ |
+| B7 | D- | CH340C Pin 6 (UD-) | USB Data- (duplicate for reversibility) |
+| A6 | D+ | CH340C Pin 5 (UD+) | USB Data+ (duplicate for reversibility) |
+| A7 | D- | CH340C Pin 6 (UD-) | USB Data- (duplicate for reversibility) |
+| B6 | D+ | CH340C Pin 5 (UD+) | USB Data+ (duplicate for reversibility) |
 | A8 | SBU1 | NC | Not Connected |
 | B5 | CC2 | 5.1kΩ resistor to GND | USB-C identification |
 | A9/B4 | VBUS | IP5306 Pin 7 (VIN) | 5V power input |
@@ -167,7 +167,7 @@ The USB-C connector provides power input for charging and data connection for pr
 
 **Important:** The 5.1kΩ resistors on CC1 (A5) and CC2 (B5) identify the device as a UFP (Upstream Facing Port) sink device, enabling proper USB-C power delivery.
 
-**Note:** USB-C has duplicate D+/D- pins (A6/B6 for D+, A7/B7 for D-) for reversible cable support. Connect both D+ pins together and both D- pins together to the CH340C.
+**Note:** USB-C has duplicate D+/D- pins for reversible cable support. Connect A6 and B6 together to CH340C Pin 5 (UD+), and connect A7 and B7 together to CH340C Pin 6 (UD-).
 
 ### CH340C Wiring (USB to Serial)
 
