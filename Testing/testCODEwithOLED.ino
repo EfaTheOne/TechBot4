@@ -277,14 +277,13 @@ void ui_draw_menu() {
     if (i == 0) {
       display.fillRect(0, 13, SCREEN_WIDTH, 10, SSD1306_WHITE);
       display.setTextColor(SSD1306_BLACK);
-      display.print(F(" "));
     } else {
       display.setTextColor(SSD1306_WHITE);
-      display.print(F(" "));
     }
+    display.print(F(" "));
     display.println(menu_items[idx]);
-    display.setTextColor(SSD1306_WHITE);
   }
+  display.setTextColor(SSD1306_WHITE);
   display.display();
 }
 
