@@ -31,8 +31,6 @@ CL21A106KOQNNNE | JLCPCB Part #C1713 | 4x
 
 CL10B104KA8NNNC | JLCPCB Part #C1590 | 4x
 
-SWPA4020S1R0NT | JLCPCB Part #C91254 (1μH Power Inductor)
-
 ### Separate Parts:</br>
 2.0" 320x240 Color IPS TFT Display with microSD Card Breakout - ST7789 EYESPI | https://www.adafruit.com/product/4311
  
