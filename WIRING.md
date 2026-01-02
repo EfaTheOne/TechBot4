@@ -37,7 +37,7 @@ This document provides the complete wiring schematic for the TechBot4 ESP32-base
 | 5.1kΩ Resistor | 0603WAF5101T5E | 2 | USB-C CC resistors |
 | 10μF Capacitor | CL21A106KOQNNNE | 4 | Decoupling |
 | 100nF Capacitor | CL10B104KA8NNNC | 4 | Decoupling |
-| 2.2μH Inductor | SWPA5040S2R2MT | 1 | IP5306 boost converter |
+| 1μH Inductor | SWPA4020S1R0NT | 1 | IP5306 boost converter (LCSC: C91254) |
 | Display | ST7789 2.0" IPS TFT | 1 | 320x240 color display |
 | Battery | Li-Po 3.7V 2500mAh | 1 | Power source |
 
@@ -88,8 +88,8 @@ Battery (3.7V) → Power Switch → IP5306 → 5V Boost → XC6220B331MR-G → 3
 | GND | Common Ground | Shared ground plane |
 | SDA | ESP32 GPIO21 | I2C Data (optional monitoring) |
 | SCL | ESP32 GPIO22 | I2C Clock (optional monitoring) |
-| L1 | 2.2μH Inductor | SWPA5040S2R2MT to SW pin |
-| L2 | 2.2μH Inductor | Other end to VOUT |
+| L1 | 1μH Inductor | SWPA4020S1R0NT to SW pin |
+| L2 | 1μH Inductor | Other end to VOUT |
 
 **IP5306 Capacitors:**
 - VIN: 10μF capacitor to GND
