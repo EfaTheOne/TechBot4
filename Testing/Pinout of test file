@@ -8,4 +8,4 @@ VCC	3.3V	3V3	Logic Power
 GND	Ground	GND	Power Ground
 JOY_X 36  // VRx
 JOY_Y 39  // VRy
-JOY_SW 34 // SW (Button)
+JOY_SW 26 // SW (Button) - Changed from GPIO34 to GPIO26 for INPUT_PULLUP support
