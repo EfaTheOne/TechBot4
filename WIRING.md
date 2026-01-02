@@ -6,7 +6,7 @@ This document provides the complete wiring schematic for the TechBot4 ESP32-base
 
 ## Table of Contents
 1. [Component Summary](#component-summary)
-2. [ESP32-WROOM-32U Pin Mapping](#esp32-wroom-32u-pin-mapping)
+2. [ESP32-WROOM-32U-N8 Pin Mapping](#esp32-wroom-32u-n8-pin-mapping)
 3. [Power System](#power-system)
 4. [USB-C and CH340C Serial Interface](#usb-c-and-ch340c-serial-interface)
 5. [Display Wiring (ST7789 via EYESPI)](#display-wiring-st7789-via-eyespi)
@@ -43,7 +43,7 @@ This document provides the complete wiring schematic for the TechBot4 ESP32-base
 
 ---
 
-## ESP32-WROOM-32U Pin Mapping
+## ESP32-WROOM-32U-N8 Pin Mapping
 
 | ESP32 GPIO | Function | Connected To |
 |------------|----------|--------------|
@@ -165,33 +165,54 @@ The USB-C connector provides power input for charging and data connection for pr
 
 ### Auto-Reset and Auto-Boot Circuit
 
-This circuit uses two S8050 NPN transistors to automatically enter bootloader mode when programming.
+This circuit uses two S8050 NPN transistors to automatically enter bootloader mode when programming. The circuit uses the standard ESP32 auto-reset timing where DTR controls EN (reset) and RTS controls GPIO0 (boot mode).
 
 ```
-                    ┌─────────┐
-    DTR ────┬──────┤ 1kΩ     ├──────┤ S8050 (Q1) Base
-            │      └─────────┘       │
-            │                        ├── Collector → EN (Reset)
-            │                        └── Emitter → GND
-            │
-            └── 100nF ── ESP32 GPIO0 (BOOT)
+                              ┌─────────┐
+    DTR ──────────100nF──────┤         ├──── EN (Reset)
+                              │   Q1    │
+    RTS ─────────────────────┤  S8050  ├──┐
+                    │        └─────────┘  │
+                    │             │       │
+                    │            GND      │
+                    │                     │
+                    │        ┌─────────┐  │
+                    └──1kΩ───┤         ├──┘
+                              │   Q2    │
+                             ┤  S8050  ├──── GPIO0 (BOOT)
+                              └─────────┘
+                                   │
+                                  GND
+```
 
-                    ┌─────────┐
-    RTS ───────────┤ 1kΩ     ├──────┤ S8050 (Q2) Base
-                   └─────────┘       │
-                                     ├── Collector → GPIO0
-                                     └── Emitter → GND
+**Detailed Circuit Description:**
+
+The auto-reset works as follows:
+1. DTR goes LOW → 100nF capacitor couples pulse to EN → ESP32 resets
+2. RTS goes LOW → Q2 turns on → GPIO0 pulled LOW → Boot mode
+3. DTR returns HIGH → EN returns HIGH via pull-up → ESP32 starts in bootloader
+
+```
+    DTR ───100nF───┬─── EN (with 10kΩ pull-up to 3.3V)
+                   │
+    RTS ───1kΩ─────┤ Q1 (S8050)
+                   │  Collector → EN
+                   │  Emitter → GND
+                   │
+    RTS ───1kΩ─────┤ Q2 (S8050)
+                      Collector → GPIO0 (with 10kΩ pull-up to 3.3V)
+                      Emitter → GND
 ```
 
 | Component | Connection |
 |-----------|------------|
-| Q1 (S8050) Base | CH340C DTR via 1kΩ resistor |
+| 100nF Capacitor | Between CH340C DTR and ESP32 EN |
+| Q1 (S8050) Base | CH340C RTS via 1kΩ resistor |
 | Q1 Collector | ESP32 EN pin |
 | Q1 Emitter | GND |
 | Q2 (S8050) Base | CH340C RTS via 1kΩ resistor |
 | Q2 Collector | ESP32 GPIO0 |
 | Q2 Emitter | GND |
-| 100nF Capacitor | Between CH340C DTR and ESP32 GPIO0 |
 
 **Pull-up Resistors:**
 - ESP32 EN: 10kΩ pull-up to 3.3V
@@ -342,7 +363,7 @@ These buttons are used for manual programming mode entry and device reset.
 | XC6220 VOUT | 10μF + 100nF | LDO output filtering |
 | CH340C VCC | 100nF | Decoupling |
 | CH340C V3 | 100nF | Internal regulator |
-| DTR to GPIO0 | 100nF | Auto-boot timing |
+| DTR to EN | 100nF | Auto-reset timing |
 
 ### Resistor Placement Summary
 
@@ -350,7 +371,7 @@ These buttons are used for manual programming mode entry and device reset.
 |----------|----------|---------|
 | USB-C CC1 to GND | 5.1kΩ | USB-C sink identification |
 | USB-C CC2 to GND | 5.1kΩ | USB-C sink identification |
-| Q1 Base (DTR) | 1kΩ | Transistor base current limiting |
+| Q1 Base (RTS) | 1kΩ | Transistor base current limiting |
 | Q2 Base (RTS) | 1kΩ | Transistor base current limiting |
 | GPIO0 to 3.3V | 10kΩ | Boot pin pull-up |
 | EN to 3.3V | 10kΩ | Enable pin pull-up |
@@ -384,13 +405,13 @@ Use this checklist to verify all connections before powering on:
 - [ ] 100nF capacitors on CH340C VCC and V3
 
 ### Auto-Reset Circuit ✓
-- [ ] Q1 base connected to DTR via 1kΩ
+- [ ] 100nF capacitor between DTR and EN
+- [ ] Q1 base connected to RTS via 1kΩ
 - [ ] Q1 collector connected to ESP32 EN
 - [ ] Q1 emitter connected to GND
 - [ ] Q2 base connected to RTS via 1kΩ
 - [ ] Q2 collector connected to ESP32 GPIO0
 - [ ] Q2 emitter connected to GND
-- [ ] 100nF capacitor between DTR and GPIO0
 - [ ] 10kΩ pull-up on EN to 3.3V
 - [ ] 10kΩ pull-up on GPIO0 to 3.3V
 
