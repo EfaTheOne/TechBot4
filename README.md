@@ -1,10 +1,5 @@
-# TechBot4
-Part List
--https://www.adafruit.com/product/4311?srsltid=AfmBOopb0Z9bzDvCusqRwQuAI18eDbWa0XD_RDmqvqr7_hGu1QP7qzMz
-
--https://jlcpcb.com/partdetail/EspressifSystems-ESP32_WROOM_32N8/C529582
-
-# Checked Source Parts:
+# TechBot4</br>
+## Checked Source Parts:
 ### PCBA Parts:</br>
 IP5306-I2C | LCSC Part#:C488349
 
@@ -50,7 +45,7 @@ SeedStudio RF Anntena | Already have part
 3D Printed Case | Made with PETG for durablitly
 
 
-# What is it?
+## What is it?
 The TechBot4 is a ESP32 WROOM 32 N8 based pen testing tool. It acts exactly like the ESP32 'Maruader' by JustCallMeKoKo and preforms the same functions, this is just a clone of the work already done. The device 
 will have a 2.0 inch 320x240 pixel display with an EYESPI connector and an added MircoSD card holder. The part is made by Adafruit and is an IPS display having a wide angle of viewing. It will run on 3.7V battery 
 power and have 1500mAh, the battery will need a battery management system but it is still a work in progress. It will be navigated by 6 buttons with one in the middle used to select and the four around to 
@@ -60,7 +55,7 @@ best.) I need too find all the parts, design a schematic with proper wiring and 
 some ground planes which i've recently been learning about. Then the 3D model, I want it to be stylish, fit in mypocket and be durable. My first pick for the type of filement would be PETG but if I aqiure better 
 filiment I can use it to make a very durable case. 
 
-# Purpose
+## Purpose
 I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. The TechBot4 is such a cool project that I have been excited about 
 and is the fourth version of the TechBot series.
 
