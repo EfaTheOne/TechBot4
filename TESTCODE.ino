@@ -19,13 +19,17 @@
 // Joystick calibration values
 #define JOY_CENTER 2048
 #define JOY_DEADZONE 300
-#define JOY_THRESHOLD_UP    (JOY_CENTER - JOY_DEADZONE)
-#define JOY_THRESHOLD_DOWN  (JOY_CENTER + JOY_DEADZONE)
-#define JOY_THRESHOLD_LEFT  (JOY_CENTER - JOY_DEADZONE)
-#define JOY_THRESHOLD_RIGHT (JOY_CENTER + JOY_DEADZONE)
+#define JOY_THRESHOLD_LOW   (JOY_CENTER - JOY_DEADZONE)  // For UP/LEFT detection
+#define JOY_THRESHOLD_HIGH  (JOY_CENTER + JOY_DEADZONE)  // For DOWN/RIGHT detection
 
 // Button threshold for analog read (if using external pullup)
 #define BTN_PRESSED_THRESHOLD 500
+
+// Display and animation constants
+#define REFRESH_DELAY_MS 50
+#define SCAN_DURATION_MS 5000
+#define SCAN_AUTO_EXIT_MS 6000
+#define JOY_VISUAL_SCALE 12
 
 // Initialize OLED with Hardware SPI (SAME as test)
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &SPI, OLED_DC, OLED_RESET, OLED_CS);
@@ -107,7 +111,7 @@ void loop() {
   }
   
   display.display();
-  delay(50);  // Faster refresh for smoother animations
+  delay(REFRESH_DELAY_MS);
 }
 
 void bootScreen() {
@@ -187,7 +191,7 @@ void handleJoystick(int x, int y, bool sw) {
   
   // Menu navigation (Y-axis up/down) with proper deadzone
   if(millis() - lastMoveTime > debounceDelay) {
-    if(y > JOY_THRESHOLD_DOWN) {  // Down - joystick pushed down = higher analog value
+    if(y > JOY_THRESHOLD_HIGH) {  // Down - joystick pushed down = higher analog value
       menuIndex = (menuIndex + 1) % NUM_MENU_ITEMS;
       // Update scroll offset
       if(menuIndex >= menuScrollOffset + VISIBLE_MENU_ITEMS) {
@@ -197,7 +201,7 @@ void handleJoystick(int x, int y, bool sw) {
         menuScrollOffset = menuIndex;
       }
       lastMoveTime = millis();
-    } else if(y < JOY_THRESHOLD_UP) {  // Up - joystick pushed up = lower analog value
+    } else if(y < JOY_THRESHOLD_LOW) {  // Up - joystick pushed up = lower analog value
       menuIndex = (menuIndex - 1 + NUM_MENU_ITEMS) % NUM_MENU_ITEMS;
       // Update scroll offset
       if(menuIndex < menuScrollOffset) {
@@ -337,7 +341,7 @@ void drawScanResults() {
   
   // Progress bar with frame
   int elapsed = millis() - scanTimer;
-  int progress = min((elapsed * 100) / 5000, 100);
+  int progress = min((elapsed * 100) / SCAN_DURATION_MS, 100);
   display.setTextColor(SSD1306_WHITE);
   display.drawRoundRect(10, 16, 108, 10, 2, SSD1306_WHITE);
   display.fillRoundRect(12, 18, (progress * 104) / 100, 6, 1, SSD1306_WHITE);
@@ -362,7 +366,7 @@ void drawScanResults() {
   display.print(stationCount);
   
   // Time remaining or complete
-  int timeLeft = (5000 - elapsed) / 1000;
+  int timeLeft = (SCAN_DURATION_MS - elapsed) / 1000;
   display.setCursor(5, 58);
   if(timeLeft > 0) {
     display.print("Time left: ");
@@ -370,7 +374,7 @@ void drawScanResults() {
     display.print("s  [CLICK=EXIT]");
   } else {
     display.print("COMPLETE! [CLICK=MENU]");
-    if(elapsed > 6000) {  // Auto-exit after 1 second past completion
+    if(elapsed > SCAN_AUTO_EXIT_MS) {  // Auto-exit 1 second after scan completion
       inScanMode = false;
     }
   }
@@ -430,8 +434,8 @@ void drawJoystickTest() {
   display.drawLine(centerX, centerY + radius - 2, centerX, centerY + radius + 3, SSD1306_WHITE);
   
   // Joystick position indicator
-  int posX = centerX + (joyXMapped * radius / 12);
-  int posY = centerY + (joyYMapped * radius / 12);
+  int posX = centerX + (joyXMapped * radius / JOY_VISUAL_SCALE);
+  int posY = centerY + (joyYMapped * radius / JOY_VISUAL_SCALE);
   display.fillCircle(posX, posY, 3, SSD1306_WHITE);
   
   // Direction indicators
