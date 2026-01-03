@@ -79,56 +79,96 @@ Battery (3.7V) → Power Switch → IP5306 → 5V Boost → XC6220B331MR-G → 3
 
 ### IP5306-I2C Wiring (Battery Management IC)
 
-**Note:** The IP5306-I2C (SOP-8L package, LCSC C488349) uses an external inductor connected to the SW pin for the buck/boost converter.
+**Quick Reference:**
+- **Package:** SOP-8L (LCSC Part #C488349)
+- **Function:** Integrated battery charging controller with 5V boost converter
+- **Key Feature:** Internal inductor (NO external inductor required)
+- **Input:** USB-C 5V or Li-Po Battery 3.7V
+- **Output:** 5V regulated output
+
+**Note:** The IP5306-I2C (SOP-8L package, LCSC C488349) has an **INTERNAL inductor** and does NOT require an external inductor. The "-I2C" variant includes integrated buck/boost circuitry.
 
 | IP5306 Pin | Function | Connection | Notes |
 |------------|----------|------------|-------|
 | Pin 1 | VIN | USB-C VBUS (5V) | Input voltage from USB source |
-| Pin 2 | LED1 | NC or LED indicator | Battery level indicator (1st LED) |
-| Pin 3 | LED2 | NC or LED indicator | Battery level indicator (2nd LED) |
-| Pin 4 | LED3 | NC or LED indicator | Battery level indicator (3rd LED) |
-| Pin 5 | KEY | 10kΩ pull-up to VIN or Power Button | Button input for status check or boost on/off |
+| Pin 2 | LED1 | NC or LED indicator | Battery level indicator (1st LED) - Optional |
+| Pin 3 | LED2 | NC or LED indicator | Battery level indicator (2nd LED) - Optional |
+| Pin 4 | LED3 | NC or LED indicator | Battery level indicator (3rd LED) - Optional |
+| Pin 5 | KEY | NC or Power Button | Button input for status check - Optional |
 | Pin 6 | BAT | Battery + (via JST) | Connection to Li-Po positive terminal |
-| Pin 7 | SW | External Inductor | Switching pin for buck/boost converter |
+| Pin 7 | SW | NC (Internal Connection) | Internally connected switching pin - Do NOT connect externally |
 | Pin 8 | VOUT | Power Switch COM | 5V output from boost converter |
 | EP | GND | Common Ground | Exposed PowerPAD - primary GND connection |
 
-**IP5306 Capacitors:**
-- Pin 1 (VIN): 10μF capacitor to GND
-- Pin 6 (BAT): 10μF capacitor to GND (on battery side)
-- Pin 8 (VOUT): 10μF capacitor to GND
+**IP5306-I2C Required Capacitors:**
+- **Pin 1 (VIN):** 10μF capacitor to GND (for USB input filtering)
+- **Pin 6 (BAT):** 10μF capacitor to GND (for battery connection filtering)
+- **Pin 8 (VOUT):** 10μF capacitor to GND (for 5V output filtering)
+
+**Important Connection Notes:**
+- **Pin 7 (SW):** Leave unconnected (NC). This pin is internally connected in the IP5306-I2C variant.
+- **Pin 5 (KEY):** Can be left unconnected (NC) for basic operation, or connect to a button for manual power on/off control.
+- **Pins 2-4 (LED1-3):** Can be left unconnected (NC) or connected to LEDs for battery status indication (optional).
+
+**Step-by-Step Connection Guide:**
+1. **USB Power Input:** Connect USB-C VBUS (5V) to IP5306 Pin 1 (VIN)
+2. **Battery Input:** Connect JST battery connector positive (+) to IP5306 Pin 6 (BAT)
+3. **5V Output:** Connect IP5306 Pin 8 (VOUT) to Power Switch COM terminal
+4. **Ground:** Connect IP5306 EP (exposed pad) to common ground plane
+5. **Add Capacitors:** Place 10μF capacitors on Pins 1, 6, and 8 (each to GND)
+6. **Leave Pin 7 (SW) unconnected** - it's internally connected
 
 ### Power Switch (C&K PCM12SMTR) Wiring
 
-| Switch Pin | Connection |
-|------------|------------|
-| COM (Common) | IP5306 Pin 8 (VOUT - 5V boost output) |
-| NO (Normally Open) | XC6220B331MR-G VIN |
+**Function:** Controls power flow from IP5306 to the 3.3V regulator
+
+| Switch Pin | Connection | Description |
+|------------|------------|-------------|
+| COM (Common) | IP5306 Pin 8 (VOUT - 5V boost output) | Input from battery management IC |
+| NO (Normally Open) | XC6220B331MR-G VIN (Pin 1) | Output to voltage regulator |
 
 **Note:** The switch controls the 5V boost output from IP5306 Pin 8 going to the 3.3V regulator. This allows the ESP32 to be completely powered off while still allowing battery charging via USB-C.
 
-### XC6220B331MR-G (3.3V LDO) Wiring
+### XC6220B331MR-G (3.3V LDO Regulator) Wiring
 
 **Package:** SOT-25-5 (JLCPCB Part #C86534)
+**Function:** Converts 5V from IP5306 to stable 3.3V for ESP32 and peripherals
 
 | LDO Pin | Function | Connection | Notes |
 |---------|----------|------------|-------|
-| Pin 1 | VIN | Power Switch Output (5V) | Input voltage (1.6V to 6V), from IP5306 via switch |
+| Pin 1 | VIN | Power Switch NO terminal (5V) | Input voltage (1.6V to 6V), from IP5306 via switch |
 | Pin 2 | VSS (GND) | Common Ground | Ground connection |
-| Pin 3 | CE | VIN (tie high) | Chip Enable - active high |
+| Pin 3 | CE | VIN (tie high) | Chip Enable - active high (always enabled) |
 | Pin 4 | NC | Not Connected | No connection |
 | Pin 5 | VOUT | 3.3V Rail | Regulated 3.3V output, powers ESP32, Display, SD Card |
 
 **LDO Capacitors:**
-- Pin 1 (VIN): 10μF capacitor to GND
-- Pin 5 (VOUT): 10μF + 100nF capacitors to GND
+- **Pin 1 (VIN):** 10μF capacitor to GND (input filtering)
+- **Pin 5 (VOUT):** 10μF + 100nF capacitors to GND (output filtering and stability)
+
+**Step-by-Step Connection Guide:**
+1. Connect Pin 1 (VIN) to Power Switch output (5V from IP5306)
+2. Connect Pin 2 (VSS) to common ground
+3. Connect Pin 3 (CE) to Pin 1 (VIN) to keep regulator always enabled when power is on
+4. Leave Pin 4 unconnected
+5. Connect Pin 5 (VOUT) to 3.3V rail that powers ESP32, CH340C, Display, and SD Card
+6. Add 10μF capacitor between Pin 1 and GND
+7. Add 10μF and 100nF capacitors between Pin 5 and GND
 
 ### Battery Connector (JST S2B-PH-K-S) Wiring
 
-| JST Pin | Connection |
-|---------|------------|
-| Pin 1 (+) | IP5306 Pin 6 (BAT) |
-| Pin 2 (-) | Common Ground |
+**Function:** Connects 3.7V Li-Po battery to power system
+
+| JST Pin | Connection | Wire Color (typical) |
+|---------|------------|---------------------|
+| Pin 1 (+) | IP5306 Pin 6 (BAT) | Red (positive) |
+| Pin 2 (-) | Common Ground | Black (negative) |
+
+**Battery Specifications:**
+- Type: Lithium Ion Polymer (Li-Po)
+- Voltage: 3.7V nominal (4.2V fully charged, 3.0V minimum)
+- Capacity: 2500mAh recommended
+- Connector: JST PH 2-pin (matches S2B-PH-K-S)
 
 ---
 
@@ -370,8 +410,6 @@ These buttons are used for manual programming mode entry and device reset.
 | GPIO16 | SD CS | SD Card Chip Select | OUTPUT |
 | GPIO18 | SPI CLK | ST7789/SD Clock | OUTPUT |
 | GPIO19 | SPI MISO | SD Card Data Out | INPUT |
-| GPIO21 | I2C SDA | IP5306 Pin 5 (LED4/SDA) - optional battery monitoring | BIDIRECTIONAL |
-| GPIO22 | I2C SCL | IP5306 Pin 6 (SCL) - optional battery monitoring | OUTPUT |
 | GPIO23 | SPI MOSI | ST7789/SD Data In | OUTPUT |
 | GPIO26 | BTN SELECT | Navigation Button | INPUT (pull-up) |
 | GPIO27 | BTN RIGHT | Navigation Button | INPUT (pull-up) |
@@ -423,10 +461,12 @@ Use this checklist to verify all connections before powering on:
 - [ ] USB-C GND (A1/B1/A12/B12) connected to common ground
 - [ ] USB-C CC1 (A5) has 5.1kΩ to GND
 - [ ] USB-C CC2 (B5) has 5.1kΩ to GND
+- [ ] IP5306 Pin 7 (SW) is left unconnected (NC) - has internal connection
 - [ ] IP5306 Pin 8 (VOUT) connected to switch COM
-- [ ] Switch output connected to XC6220 Pin 1 (VIN)
+- [ ] Switch output (NO terminal) connected to XC6220 Pin 1 (VIN)
+- [ ] XC6220 Pin 3 (CE) connected to Pin 1 (VIN) to enable regulator
 - [ ] XC6220 Pin 5 (VOUT) provides 3.3V rail
-- [ ] All power capacitors placed correctly
+- [ ] All power capacitors placed correctly (10μF on IP5306 pins 1, 6, 8 and XC6220 pins 1, 5)
 
 ### USB Serial ✓
 - [ ] CH340C Pin 5 (D+) connected to USB-C D+ (A6/B6)
