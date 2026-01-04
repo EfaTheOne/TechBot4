@@ -12,9 +12,11 @@ This guide explains how to use EasyEDA tools to check the wiring and start the P
 5. [Wiring the Schematic](#wiring-the-schematic)
 6. [Checking the Wiring with ERC](#checking-the-wiring-with-erc)
 7. [Converting Schematic to PCB](#converting-schematic-to-pcb)
-8. [PCB Layout Best Practices](#pcb-layout-best-practices)
-9. [Design Rule Check (DRC)](#design-rule-check-drc)
-10. [Generating Manufacturing Files](#generating-manufacturing-files)
+8. [EasyEDA Pro PCB Editor Deep Dive](#easyeda-pro-pcb-editor-deep-dive)
+9. [PCB Layout Best Practices](#pcb-layout-best-practices)
+10. [Advanced PCB Techniques for TechBot4](#advanced-pcb-techniques-for-techbot4)
+11. [Design Rule Check (DRC)](#design-rule-check-drc)
+12. [Generating Manufacturing Files](#generating-manufacturing-files)
 
 ---
 
@@ -192,6 +194,287 @@ Once your schematic is complete and ERC-clean:
 1. Click on the board outline layer (**BoardOutLine**)
 2. Draw a rectangle or custom shape for your PCB
 3. For TechBot4, a compact size like **70mm x 50mm** is recommended (see README.md for pocket-sized design goal)
+
+---
+
+## EasyEDA Pro PCB Editor Deep Dive
+
+EasyEDA Pro offers advanced PCB design features that help you create a professional-quality board. This section covers Pro-specific tools and workflows.
+
+### EasyEDA Pro Interface Overview
+
+When you open the PCB editor in EasyEDA Pro:
+
+| Panel | Location | Purpose |
+|-------|----------|---------|
+| **Layer Manager** | Left side | Toggle layer visibility, set active layer |
+| **Design Manager** | Left side | View nets, components, DRC errors |
+| **Properties Panel** | Right side | Edit selected object properties |
+| **Toolbar** | Top | Drawing tools, routing, copper pour |
+| **Canvas** | Center | PCB design area |
+| **Bottom Bar** | Bottom | Grid settings, units, zoom |
+
+### Layer Stack Configuration
+
+For a 2-layer TechBot4 PCB:
+
+1. Click **Setup** → **Layer Stack Manager**
+2. Configure the layer stack:
+
+| Layer | Name | Thickness | Purpose |
+|-------|------|-----------|---------|
+| Top | Top Copper | 35μm (1oz) | Signal traces, component pads |
+| Bottom | Bottom Copper | 35μm (1oz) | Ground plane, additional routing |
+
+**Note**: The FR4 substrate (1.6mm standard) is between the copper layers but is not configured as a separate layer in EasyEDA.
+
+3. Click **Apply** to save settings
+
+### Grid and Snap Settings
+
+Proper grid settings are essential for precise component placement:
+
+1. Click **Setup** → **Grid Settings** (or press `G`)
+2. Recommended settings for TechBot4:
+
+| Setting | Value | Purpose |
+|---------|-------|---------|
+| **Grid Size** | 0.1mm (100mil) | General placement |
+| **Fine Grid** | 0.025mm (25mil) | Precise alignment |
+| **Snap to Grid** | Enabled | Clean component placement |
+| **Snap to Pad** | Enabled | Accurate trace routing |
+
+3. Toggle between grids with `G` key during design
+
+### Component Placement in EasyEDA Pro
+
+#### Step 1: Import Components
+After converting from schematic, all components appear in a cluster. To organize:
+
+1. Press `M` to enter **Move** mode
+2. Select components and drag to approximate positions
+3. Press `R` to rotate selected component (90° increments)
+4. Press `Shift+R` for custom rotation angles
+
+#### Step 2: Alignment Tools (Pro Feature)
+
+EasyEDA Pro has powerful alignment tools:
+
+1. Select multiple components (Ctrl+Click)
+2. Right-click → **Align**:
+   - **Align Left/Right/Top/Bottom**: Align edges
+   - **Distribute Horizontally/Vertically**: Equal spacing
+   - **Align Centers**: Center alignment
+
+#### Step 3: TechBot4 Component Layout Strategy
+
+Place components in this order for optimal routing:
+
+```
+┌──────────────────────────────────────────────────┐
+│  [USB-C]  [CH340C]  [BOOT] [RST]                 │
+│                                                   │
+│  [IP5306]  [Switch]  [XC6220 LDO]                │
+│                                                   │
+│  ┌─────────────────────────────┐                 │
+│  │       ESP32-WROOM-32U       │    [Buttons]    │
+│  │                             │    [UP]         │
+│  │                             │ [LT][SEL][RT]   │
+│  │         (Keep antenna       │    [DN]         │
+│  │          area clear)        │                 │
+│  └─────────────────────────────┘                 │
+│                                                   │
+│  [JST Battery]        [EYESPI Display Connector] │
+└──────────────────────────────────────────────────┘
+```
+
+### Routing in EasyEDA Pro
+
+#### Interactive Router Settings
+
+1. Click **Route** → **Interactive Route** (or press `W`)
+2. Configure routing options in the Properties panel:
+
+| Setting | Recommended Value | Notes |
+|---------|-------------------|-------|
+| **Track Width** | 0.25mm default | Can change per-trace |
+| **Via Size** | 0.6mm outer / 0.3mm drill | JLCPCB compatible |
+| **Clearance** | 0.2mm | Space between traces |
+| **Corner Style** | 45° (mitered) | Better signal integrity |
+
+#### Track Width Classes
+
+Set up different track widths for different signal types:
+
+1. Click **Setup** → **Design Rules** → **Net Classes**
+2. Create these net classes:
+
+| Net Class | Track Width | Via Size | Nets |
+|-----------|-------------|----------|------|
+| **Power** | 0.5mm | 0.8mm/0.4mm | 3V3, VBAT, 5V_BOOST, GND |
+| **Signal** | 0.25mm | 0.6mm/0.3mm | GPIO signals, SPI, I2C |
+| **USB** | 0.3mm | 0.6mm/0.3mm | D+, D- (matched pair) |
+
+3. Assign nets to classes in the Design Manager
+
+#### Routing Shortcuts in Pro
+
+| Shortcut | Action |
+|----------|--------|
+| `W` | Start routing |
+| `V` | Place via while routing |
+| `Shift+W` | Toggle routing layer |
+| `Backspace` | Delete last segment |
+| `Esc` | Cancel routing |
+| `1` / `2` | Switch to Top/Bottom layer |
+| `+` / `-` | Increase/decrease track width |
+
+### Copper Pour (Ground Plane) in Pro
+
+#### Creating a Solid Ground Plane
+
+1. Select the **Bottom Layer** (`2` key)
+2. Click **Place** → **Copper Area** (or press `Shift+P`)
+3. Configure in Properties:
+   - **Net**: GND
+   - **Clearance**: 0.3mm
+   - **Thermal Relief**: Spoke width 0.25mm, 4 spokes
+4. Draw a rectangle covering the entire board
+5. Press `Shift+B` to rebuild copper pours
+
+#### Ground Plane Best Practices
+
+- **Thermal Relief**: Enables easier soldering of through-hole GND connections
+- **Spoke Count**: 4 spokes is standard; use 2 for better thermal dissipation
+- **Anti-Pad Size**: Set to 0.3-0.5mm larger than via/pad diameter
+
+### Via Stitching for Ground Plane
+
+Connect top and bottom ground areas with vias:
+
+1. Click **Place** → **Via Array** (Pro feature)
+2. Configure:
+   - **Via Size**: 0.6mm outer / 0.3mm drill
+   - **Spacing**: 3-5mm apart
+   - **Net**: GND
+3. Place via arrays around:
+   - Board edges
+   - Near high-current components (IP5306, LDO)
+   - Around the ESP32 module
+
+### ESP32 Antenna Keepout Zone
+
+The ESP32-WROOM-32U has an onboard antenna that requires a clearance zone:
+
+1. Select **Top Layer**
+2. Click **Place** → **Keepout Area**
+3. Draw a rectangle extending **15mm beyond the ESP32 antenna end**
+4. In Properties:
+   - Enable: **No Copper**, **No Via**, **No Track**
+5. Repeat on **Bottom Layer**
+
+**Critical**: No copper (traces, ground plane, or pours) should be under or near the antenna area.
+
+### Teardrops (Pro Feature)
+
+Teardrops strengthen pad-to-trace connections:
+
+1. Click **Tools** → **Add Teardrops**
+2. Configure:
+   - **Pad Teardrops**: Enabled
+   - **Via Teardrops**: Enabled
+   - **Size**: 100% (default)
+3. Click **Apply All**
+
+### Length Matching (USB Differential Pair)
+
+For the USB D+/D- signals:
+
+1. Route D+ and D- traces parallel, with **0.15mm** spacing
+2. Click **Route** → **Differential Pair Router**
+3. Select the D+/D- net pair
+4. Route together to maintain matching length
+5. After routing, check length in **Design Manager** → **Nets**
+6. Target: Both traces within **±0.1mm** of each other for proper USB signal integrity
+
+---
+
+## Advanced PCB Techniques for TechBot4
+
+### Power Integrity
+
+#### Decoupling Capacitor Placement
+
+| Component | Capacitor | Placement |
+|-----------|-----------|-----------|
+| ESP32 3V3 Pin | 100nF | Within 2mm of pin |
+| XC6220 VOUT | 10μF + 100nF | Within 3mm of output pin |
+| XC6220 VIN | 10μF | Within 3mm of input pin |
+| IP5306 VOUT | 10μF | Within 3mm of pin 8 |
+| IP5306 BAT | 10μF | Within 3mm of pin 6 |
+| CH340C VCC | 100nF | Within 2mm of pin 13 |
+
+#### Power Trace Star Topology
+
+Route power from the LDO output in a star pattern:
+
+```
+                    ┌─── ESP32 3V3
+                    │
+XC6220 VOUT ────────┼─── CH340C VCC
+                    │
+                    ├─── Display VCC
+                    │
+                    └─── Decoupling Caps
+```
+
+This prevents voltage drops from affecting sensitive components.
+
+### Signal Integrity
+
+#### SPI Bus Routing
+
+1. Keep SPI traces **short** (< 50mm total length)
+2. Route SPI_CLK, SPI_MOSI, SPI_MISO as a group
+3. Add **100nF capacitors** near display/SD card SPI connections
+4. Avoid running SPI traces near power traces or switching nodes
+
+#### USB Signal Routing
+
+1. Route D+ and D- as **differential pair** (parallel, matched length)
+2. Target **90Ω differential impedance** - use EasyEDA Pro's built-in impedance calculator (**Setup** → **Impedance Calculator**) to determine exact trace width and gap for your stackup
+3. Keep USB traces away from high-frequency signals
+4. Add ESD protection if desired (TVS diodes on D+/D-)
+
+### Silkscreen and Assembly Markings
+
+#### Component Labels
+
+1. Select **Top Silkscreen Layer**
+2. Ensure all component designators (R1, C1, U1) are visible
+3. Move labels outside component footprints for readability
+4. Minimum text height: **0.8mm** for JLCPCB
+
+#### Add These Markings
+
+| Marking | Location | Purpose |
+|---------|----------|---------|
+| **TechBot4** | Center/Corner | Project name |
+| **V1.0** | Near project name | Version number |
+| **+ / -** | Near JST connector | Battery polarity |
+| **5V / 3V3 / GND** | Near test points | Power rail labels |
+| **Pin 1 dot** | Near IC corner | Orientation marker |
+
+### Mounting Holes
+
+If adding mounting holes for the 3D printed case:
+
+1. Click **Place** → **Pad** → **Mounting Hole**
+2. Configure:
+   - **Hole Size**: 3.2mm (for M3 screws)
+   - **Pad Size**: 6mm (optional copper ring)
+   - **Net**: Connect to GND for shielding or leave unconnected
+3. Place in corners, at least **3mm from board edge**
 
 ---
 
