@@ -395,8 +395,10 @@ These buttons are used for manual programming mode entry and device reset.
 
 ### ESP32 GPIO Full Mapping
 
-| GPIO | Function | Component | Direction |
+| Pin | Function | Component | Direction |
 |------|----------|-----------|-----------|
+| 3V3 | Power | XC6220 Pin 5 (VOUT) - 3.3V Rail | POWER IN |
+| GND | Ground | Common Ground Plane | POWER IN |
 | GPIO0 | BOOT | Boot Button + Auto-boot circuit | INPUT (pull-up) |
 | GPIO1 | UART TX | CH340C RXD | OUTPUT |
 | GPIO2 | TFT DC | ST7789 DC | OUTPUT |
@@ -467,6 +469,11 @@ Use this checklist to verify all connections before powering on:
 - [ ] XC6220 Pin 3 (CE) connected to Pin 1 (VIN) to enable regulator
 - [ ] XC6220 Pin 5 (VOUT) provides 3.3V rail
 - [ ] All power capacitors placed correctly (10μF on IP5306 pins 1, 6, 8 and XC6220 pins 1, 5)
+
+### ESP32 Power ✓
+- [ ] ESP32 3V3 pin connected to 3.3V rail (XC6220 Pin 5 VOUT)
+- [ ] ESP32 GND pins connected to common ground plane
+- [ ] 100nF decoupling capacitor between ESP32 3V3 and GND (close to pins)
 
 ### USB Serial ✓
 - [ ] CH340C Pin 5 (D+) connected to USB-C D+ (A6/B6)
