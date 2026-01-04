@@ -27,9 +27,9 @@ S8050 | JLCPCB Part #C266592 | 2x
 
 0603WAF5101T5E | JLCPCB Part #C23186 | 2x
 
-CL21A106KOQNNNE | JLCPCB Part #C1713 | 4x
+CL21A106KOQNNNE | JLCPCB Part #C1713 | 5x
 
-CL10B104KA8NNNC | JLCPCB Part #C1590 | 4x
+CL10B104KA8NNNC | JLCPCB Part #C1590 | 3x
 
 ### Separate Parts:</br>
 2.0" 320x240 Color IPS TFT Display with microSD Card Breakout - ST7789 EYESPI | https://www.adafruit.com/product/4311

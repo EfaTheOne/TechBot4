@@ -35,8 +35,8 @@ This document provides the complete wiring schematic for the TechBot4 ESP32-base
 | 10kΩ Resistor | 0603WAJ0103T5E | 5 | Pull-up/pull-down |
 | 1kΩ Resistor | 0603WAF1001T5E | 2 | Current limiting |
 | 5.1kΩ Resistor | 0603WAF5101T5E | 2 | USB-C CC resistors |
-| 10μF Capacitor | CL21A106KOQNNNE | 4 | Decoupling |
-| 100nF Capacitor | CL10B104KA8NNNC | 4 | Decoupling |
+| 10μF Capacitor | CL21A106KOQNNNE | 5 | Decoupling |
+| 100nF Capacitor | CL10B104KA8NNNC | 3 | Decoupling |
 | Display | ST7789 2.0" IPS TFT | 1 | 320x240 color display |
 | Battery | Li-Po 3.7V 2500mAh | 1 | Power source |
 
