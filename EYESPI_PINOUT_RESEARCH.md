@@ -34,19 +34,19 @@ The EYESPI (EYE SPI) connector is Adafruit's standardized 18-pin 0.5mm pitch FPC
 
 ### Verified Pinout for Product #4311 (ST7789 2.0" TFT with microSD)
 
-| Pin | Signal Name | Function | Direction | User's List Match |
-|-----|-------------|----------|-----------|-------------------|
-| 1   | **GND**     | Ground | Power | ✅ GND |
-| 2   | **3.3V**    | Power Supply (VIN) | Power | ✅ VIN |
-| 3   | **SCK**     | SPI Clock | Input | ✅ spiClock |
-| 4   | **MOSI**    | SPI Data Out (from MCU) | Input | ✅ spiMOSI |
-| 5   | **MISO**    | SPI Data In (to MCU) | Output | ✅ spiMISO |
-| 6   | **TFT_CS**  | Display Chip Select | Input | ✅ tftCS |
-| 7   | **TFT_DC**  | Display Data/Command | Input | ✅ tftDC |
-| 8   | **TFT_RST** | Display Reset | Input | ✅ tftReset |
-| 9   | **SD_CS**   | SD Card Chip Select | Input | ✅ SDcs |
-| 10  | **LITE**    | Backlight Control | Input | ✅ Backlight |
-| 11-18 | NC        | Not Connected / Reserved | - | Not in user's list |
+| Pin   | Signal Name | Function                      | Direction | User's List Match      |
+|-------|-------------|-------------------------------|-----------|------------------------|
+| 1     | **GND**     | Ground                        | Power     | ✅ GND                 |
+| 2     | **3.3V**    | Power Supply (VIN)            | Power     | ✅ VIN                 |
+| 3     | **SCK**     | SPI Clock                     | Input     | ✅ spiClock            |
+| 4     | **MOSI**    | SPI Data Out (from MCU)       | Input     | ✅ spiMOSI             |
+| 5     | **MISO**    | SPI Data In (to MCU)          | Output    | ✅ spiMISO             |
+| 6     | **TFT_CS**  | Display Chip Select           | Input     | ✅ tftCS               |
+| 7     | **TFT_DC**  | Display Data/Command          | Input     | ✅ tftDC               |
+| 8     | **TFT_RST** | Display Reset                 | Input     | ✅ tftReset            |
+| 9     | **SD_CS**   | SD Card Chip Select           | Input     | ✅ SDcs                |
+| 10    | **LITE**    | Backlight Control             | Input     | ✅ Backlight           |
+| 11-18 | NC          | Not Connected / Reserved      | -         | Not in user's list     |
 
 ---
 
