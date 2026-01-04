@@ -60,7 +60,7 @@ These resistors ensure proper default states for critical ESP32 pins:
 - The reset pulse lasts approximately 2-3τ = 2-3ms
 - This is the perfect duration: long enough to reliably reset the ESP32, but short enough to complete before the bootloader check
 - Too small (e.g., 10nF): Reset pulse too brief, may not reliably reset the ESP32
-- Too large (e.g., 1μF): Reset pulse too long, may interfere with boot sequence timing
+- Too large (e.g., 1µF): Reset pulse too long, may interfere with boot sequence timing
 
 ---
 
@@ -80,7 +80,7 @@ RTS ─────────────────────┤  S8050  �
                 │         ┌─────────┐  │
                 └──1kΩ────┤         ├──┘
                           │   Q2    │
-                         ┤  S8050  ├──── GPIO0 (BOOT)
+                          ├  S8050  ├──── GPIO0 (BOOT)
                           └─────────┘     (with 10kΩ pull-up to 3.3V)
                                │
                               GND
