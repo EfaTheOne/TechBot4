@@ -183,11 +183,11 @@ Based on the TechBot4 design documents:
 
 The third 10kΩ resistor you used might be:
 
-1. **GPIO15 (TFT Backlight) pull-up/pull-down**: GPIO15 is a strapping pin that must be LOW during boot. Some designs add a pull-down resistor here, though it's not documented in WIRING.md.
+1. **GPIO15 (TFT Backlight) pull-down**: GPIO15 is a strapping pin that should be LOW during boot to enable SDIO mode. If used for backlight control, a pull-down resistor ensures proper boot behavior while allowing the pin to be driven HIGH later for backlight operation.
 
-2. **GPIO2 (TFT DC) pull-up/pull-down**: GPIO2 is another strapping pin. While it can float, some implementations add a pull-up.
+2. **GPIO2 (TFT DC) pull-up**: GPIO2 is a strapping pin that should be floating or HIGH during boot to enter normal flash boot mode. Some implementations add a weak pull-up to prevent floating states.
 
-3. **Additional CS line pull-up**: Sometimes SPI CS lines have weak pull-ups to prevent floating when inactive.
+3. **Additional CS line pull-up**: Sometimes SPI CS lines have weak pull-ups to keep them HIGH (inactive) when not actively driven.
 
 4. **Implementation difference**: Your actual build may have deviated from the documented design for stability or other practical reasons.
 
@@ -251,6 +251,6 @@ The 10kΩ resistors and 100nF capacitor that ARE installed in your circuit form 
 1. **Physically inspect your board** to locate where all three 10kΩ resistors are placed
 2. **Compare with WIRING.md** to identify the undocumented resistor location
 3. **Keep the leftover components** as spares for future repairs or modifications
-4. If you find the third 10kΩ resistor location, consider updating the WIRING.md documentation for completeness
+4. If you find the third 10kΩ resistor location, document it for future reference or report it to help improve the WIRING.md documentation
 
 The leftover components you have are either intentional spares (100nF) or indicate a minor documentation gap (10kΩ). This is normal in electronics projects where BOM quantities often include spares.
