@@ -191,7 +191,7 @@ Once your schematic is complete and ERC-clean:
 
 1. Click on the board outline layer (**BoardOutLine**)
 2. Draw a rectangle or custom shape for your PCB
-3. For TechBot4, a compact size like **70mm x 50mm** is recommended to fit in a pocket
+3. For TechBot4, a compact size like **70mm x 50mm** is recommended (see README.md for pocket-sized design goal)
 
 ---
 
