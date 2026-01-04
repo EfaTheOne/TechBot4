@@ -1,18 +1,54 @@
-# Component Verification: Auto-Reset Circuit
+# Component Analysis: Leftover Parts Verification
 
-## Question: Are 2x 10kΩ Resistors and 1x 100nF Capacitor Correct?
+## Question: Why do I have 2x 10kΩ Resistors and 1x 100nF Capacitor leftover?
 
-**Answer: YES, this is correct for the ESP32 auto-reset circuit!**
+After analyzing the TechBot4 wiring documentation and bill of materials, here's the breakdown:
 
 ---
 
-## Explanation
+## Component Usage Analysis
 
-The two 10kΩ resistors and one 100nF capacitor are essential components for the **ESP32 auto-reset and auto-boot circuit**, which enables automatic programming without manually pressing the BOOT and RESET buttons.
+### Bill of Materials (BOM)
+According to README.md and WIRING.md:
+- **10kΩ Resistors (0603WAJ0103T5E)**: 5 total ordered
+- **100nF Capacitors (CL10B104KA8NNNC)**: 4 total ordered
+
+### Actual Circuit Usage
+
+#### 100nF Capacitors - 3 Used, 1 Leftover ✓
+
+**Used locations:**
+1. **XC6220 Pin 5 (VOUT)**: 100nF for LDO output filtering (paired with 10µF)
+2. **CH340C Pin 13 (VCC)**: 100nF for power decoupling
+3. **CH340C Pin 12 (DTR#) to ESP32 EN**: 100nF for auto-reset timing capacitor
+
+**Leftover: 1 capacitor** - This matches your count and is expected based on the design.
+
+#### 10kΩ Resistors - Documentation Shows Issue
+
+**Documented uses in WIRING.md (only 2):**
+1. **ESP32 EN to 3.3V**: Pull-up resistor for enable/reset pin
+2. **ESP32 GPIO0 to 3.3V**: Pull-up resistor for boot mode selection
+
+**Your leftover count: 2 resistors**
+
+This means you've used **3 out of 5** resistors, but the WIRING.md only documents 2 uses. There appears to be either:
+- One additional 10kΩ resistor used in your actual build that's not documented
+- A discrepancy between the design documents and actual implementation
+
+**Reserved in BOM: 3 resistors** marked as "Reserved | 10kΩ (3x) | For additional needs" in the resistor placement summary.
+
+---
+
+## The Critical Auto-Reset Circuit Components
+
+While you have leftovers, the two 10kΩ resistors and one 100nF capacitor that ARE used form the essential auto-reset circuit:
 
 ### Component Breakdown
 
-#### 1. Two 10kΩ Resistors (Pull-up Resistors)
+The auto-reset circuit uses specific passive components. Here's what each one does:
+
+#### 10kΩ Resistors in Auto-Reset Circuit (2 used)
 
 These resistors ensure proper default states for critical ESP32 pins:
 
@@ -41,7 +77,7 @@ These resistors ensure proper default states for critical ESP32 pins:
 - Standard value for ESP32 pull-ups (recommended in ESP32 datasheet)
 - Low power consumption during normal operation
 
-#### 2. One 100nF Capacitor (Reset Timing Capacitor)
+#### 100nF Capacitor in Auto-Reset Circuit (1 used)
 
 **Location:** Between CH340C Pin 12 (DTR#) and ESP32 EN pin
 
@@ -121,19 +157,44 @@ This circuit eliminates the need to manually press BOOT and RESET buttons during
 
 ## Component Summary from Bill of Materials
 
-From the TechBot4 parts list:
+Based on the TechBot4 design documents:
 
-| Component | Part Number | Quantity | Used For |
-|-----------|-------------|----------|----------|
-| 10kΩ Resistor | 0603WAJ0103T5E | **5 total** | 2 for auto-reset (EN + GPIO0), 3 reserved |
-| 100nF Capacitor | CL10B104KA8NNNC | **4 total** | 1 for auto-reset (DTR-EN), 3 for decoupling |
-| 1kΩ Resistor | 0603WAF1001T5E | 2 | Transistor base current limiting |
-| S8050 Transistor | S8050 | 2 | Auto-reset switching (Q1 + Q2) |
+| Component | Part Number | Quantity in BOM | Documented Uses | Your Leftovers |
+|-----------|-------------|-----------------|-----------------|----------------|
+| 10kΩ Resistor | 0603WAJ0103T5E | **5 total** | 2 (EN + GPIO0 pull-ups) | **2** (you used 3) |
+| 100nF Capacitor | CL10B104KA8NNNC | **4 total** | 3 (LDO output, CH340C VCC, DTR-EN) | **1** (matches docs) |
+| 1kΩ Resistor | 0603WAF1001T5E | 2 total | 2 (Q1 + Q2 base resistors) | 0 (all used) |
+| S8050 Transistor | S8050 | 2 total | 2 (Q1 + Q2 auto-reset) | 0 (all used) |
 
-**Your 2x 10kΩ resistors and 1x 100nF capacitor** represent the critical passive components for the auto-reset functionality. They are absolutely essential for:
-- Automatic programming via USB without button presses
-- Stable ESP32 operation with proper pin states
-- Reliable boot mode selection
+### Analysis of Your Leftovers
+
+**100nF Capacitor (1 leftover)**: ✓ **This is expected and correct**
+- The BOM specifies 4 capacitors
+- The documented design uses 3 (one each for: LDO output filtering, CH340C decoupling, auto-reset timing)
+- 1 leftover is intentional spare/reserve
+
+**10kΩ Resistors (2 leftover)**:  ⚠️ **Discrepancy detected**
+- The BOM specifies 5 resistors
+- The WIRING.md documents only 2 uses (EN pull-up, GPIO0 pull-up)
+- You have 2 leftover, meaning you used 3 resistors
+- **One 10kΩ resistor is being used somewhere not documented in WIRING.md**
+
+### Possible Explanations for the 3rd 10kΩ Resistor
+
+The third 10kΩ resistor you used might be:
+
+1. **GPIO15 (TFT Backlight) pull-up/pull-down**: GPIO15 is a strapping pin that must be LOW during boot. Some designs add a pull-down resistor here, though it's not documented in WIRING.md.
+
+2. **GPIO2 (TFT DC) pull-up/pull-down**: GPIO2 is another strapping pin. While it can float, some implementations add a pull-up.
+
+3. **Additional CS line pull-up**: Sometimes SPI CS lines have weak pull-ups to prevent floating when inactive.
+
+4. **Implementation difference**: Your actual build may have deviated from the documented design for stability or other practical reasons.
+
+**Recommendation**: Check your actual circuit board to identify where the third 10kΩ resistor is placed. This will help determine if:
+- The WIRING.md documentation is incomplete
+- You added a component for a specific reason
+- There was a counting error
 
 ---
 
@@ -160,14 +221,36 @@ It's based on the original Arduino DTR auto-reset circuit but adapted for the ES
 
 ## Conclusion
 
-**Yes, the 2x 10kΩ resistors and 1x 100nF capacitor are correct and essential!**
+### Summary of Your Leftover Components
 
-These components form the core of the auto-reset circuit that makes the TechBot4 easy to program. Without them, you would need to manually:
-1. Hold the BOOT button
+**1x 100nF Capacitor leftover**: ✓ **Expected and correct**
+- This is an intentional spare in the BOM
+- All 3 required capacitors are documented and presumably installed
+- Keep this as a spare for repairs or future modifications
+
+**2x 10kΩ Resistors leftover**: ⚠️ **Needs verification**
+- According to WIRING.md, only 2 resistors should be used (EN and GPIO0 pull-ups)
+- This would mean 3 should be leftover
+- Since you only have 2 leftover, one additional 10kΩ resistor is installed somewhere
+- **Action needed**: Verify your actual circuit to identify where the 3rd resistor is located
+
+### What These Components Do (When Installed)
+
+The 10kΩ resistors and 100nF capacitor that ARE installed in your circuit form the essential auto-reset functionality:
+
+**Without these components**, you'd need to manually enter bootloader mode:
+1. Hold BOOT button
 2. Press and release RESET
 3. Release BOOT
-4. Then start uploading
+4. Then start uploading code
 
-With these components properly installed, programming becomes automatic and seamless—the CH340C USB-to-serial chip handles everything through the DTR and RTS control signals.
+**With these components properly installed**, programming is automatic—the CH340C USB-to-serial chip controls the ESP32 boot mode through DTR and RTS signals, making development seamless.
 
-This is one of those clever circuit designs that makes modern embedded development so much more convenient than it used to be!
+### Next Steps
+
+1. **Physically inspect your board** to locate where all three 10kΩ resistors are placed
+2. **Compare with WIRING.md** to identify the undocumented resistor location
+3. **Keep the leftover components** as spares for future repairs or modifications
+4. If you find the third 10kΩ resistor location, consider updating the WIRING.md documentation for completeness
+
+The leftover components you have are either intentional spares (100nF) or indicate a minor documentation gap (10kΩ). This is normal in electronics projects where BOM quantities often include spares.
