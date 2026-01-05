@@ -4,6 +4,95 @@ This guide focuses exclusively on PCB layout and design in EasyEDA Pro for the T
 
 ---
 
+## 📋 Quick Start Checklist
+
+New to the guide? Follow these steps in order:
+
+1. ✅ Set up 4-layer stack: **Setup → Layer Stack Manager** ([details](#configuring-the-4-layer-stack-in-easyeda-pro))
+2. ✅ Configure grid: **Setup → Grid Settings** ([details](#grid-settings))
+3. ✅ Set design rules: **Setup → Design Rules** ([details](#design-rules-for-jlcpcb-4-layer))
+4. ✅ Define net classes: **Setup → Design Rules → Net Classes** ([details](#net-classes))
+5. ✅ Draw board outline: Select **BoardOutLine layer** ([details](#board-outline))
+6. ✅ Place components in order ([details](#component-placement-strategy))
+7. ✅ Create GND plane on Layer 2: **Place → Copper Area** ([details](#ground-plane-configuration))
+8. ✅ Create 3V3 plane on Layer 3: **Place → Copper Area** ([details](#3v3-power-plane-configuration))
+9. ✅ Route signals ([details](#signal-routing))
+10. ✅ Add via stitching ([details](#via-strategy))
+11. ✅ Run DRC: **Design → Check DRC** or `Ctrl+D` ([details](#running-drc-in-easyeda-pro))
+12. ✅ Generate Gerbers: **Fabrication → PCB Fabrication File (Gerber)** ([details](#generating-4-layer-gerber-files))
+
+---
+
+## 🔧 Quick Settings Reference
+
+Use this section to quickly find any setting. All menu paths shown below.
+
+### Where to Find Settings in EasyEDA Pro
+
+| Setting | Menu Path | Shortcut |
+|---------|-----------|----------|
+| **Layer Stack Manager** | Setup → Layer Stack Manager | — |
+| **Grid Settings** | Setup → Grid Settings | — |
+| **Design Rules** | Setup → Design Rules | — |
+| **Net Classes** | Setup → Design Rules → Net Classes | — |
+| **Copper Area (Plane)** | Place → Copper Area | `Shift+P` |
+| **Keepout Area** | Place → Keepout Area | — |
+| **Via Array** | Place → Via Array | — |
+| **Route Track** | Route → Single Track | `W` |
+| **Differential Pair** | Route → Differential Pair Router | — |
+| **Length Tuning** | Route → Length Tuning | — |
+| **Design Rule Check** | Design → Check DRC | `Ctrl+D` |
+| **Rebuild Copper Pour** | — | `Shift+B` |
+| **Generate Gerber** | Fabrication → PCB Fabrication File (Gerber) | — |
+
+### All Settings Values at a Glance
+
+**Board Dimensions:** 70mm × 50mm with 3mm corner radius
+
+**Grid Settings:**
+| Grid Type | Value |
+|-----------|-------|
+| Default Grid | 0.5mm |
+| Fine Grid | 0.1mm |
+| Routing Grid | 0.1mm |
+
+**Design Rules (JLCPCB 4-Layer):**
+| Rule | Value |
+|------|-------|
+| Min Track Width | 0.15mm |
+| Min Track Spacing | 0.15mm |
+| Min Via Diameter | 0.45mm |
+| Min Via Drill | 0.25mm |
+| Min Plane Clearance | 0.25mm |
+| Board Edge Clearance | 0.3mm |
+
+**Net Classes:**
+| Net Class | Track Width | Via Size (OD/Drill) | Clearance |
+|-----------|-------------|---------------------|-----------|
+| GND | 0.3mm | 0.6mm / 0.3mm | 0.2mm |
+| Power | 0.4mm | 0.6mm / 0.3mm | 0.25mm |
+| Signal | 0.2mm | 0.5mm / 0.25mm | 0.15mm |
+| USB | 0.25mm | 0.5mm / 0.25mm | 0.15mm |
+
+**Copper Pour Settings:**
+| Property | GND Plane (L2) | 3V3 Plane (L3) |
+|----------|----------------|----------------|
+| Clearance | 0.25mm | 0.3mm |
+| Pour Type | Solid | Solid |
+| Thermal Relief | Enabled | Enabled |
+| Spoke Width | 0.3mm | 0.3mm |
+| Spoke Count | 4 | — |
+| Thermal Gap | 0.25mm | — |
+
+**Via Sizes:**
+| Via Type | Outer Diameter | Drill Size |
+|----------|----------------|------------|
+| Signal Via | 0.5mm | 0.25mm |
+| Power Via | 0.6mm | 0.3mm |
+| Stitching Via | 0.5mm | 0.25mm |
+
+---
+
 ## Table of Contents
 1. [PCB Layer Stack Setup](#pcb-layer-stack-setup)
 2. [Board Setup and Design Rules](#board-setup-and-design-rules)
@@ -16,7 +105,7 @@ This guide focuses exclusively on PCB layout and design in EasyEDA Pro for the T
 
 ---
 
-## PCB Layer Stack Setup
+## 🔲 PCB Layer Stack Setup
 
 ### Why 4-Layer for TechBot4
 
@@ -28,10 +117,14 @@ A 4-layer PCB provides significant advantages for the TechBot4:
 
 ### Configuring the 4-Layer Stack in EasyEDA Pro
 
+> **📍 Where to find:** Click **Setup** → **Layer Stack Manager**
+
+**Step-by-step instructions:**
+
 1. Open your PCB in EasyEDA Pro
-2. Click **Setup** → **Layer Stack Manager**
-3. Click **Add Layer** to create a 4-layer stackup
-4. Configure layers as follows:
+2. Go to **Setup** → **Layer Stack Manager** from the menu
+3. Click **Add Layer** button to create a 4-layer stackup
+4. Configure each layer as follows:
 
 | Layer | Name | Type | Thickness | Purpose |
 |-------|------|------|-----------|---------|
@@ -61,7 +154,7 @@ If you prefer 3 layers (note: 3-layer PCBs are less common and may have longer l
 
 ---
 
-## Board Setup and Design Rules
+## 📐 Board Setup and Design Rules
 
 ### Board Outline
 
@@ -71,7 +164,9 @@ If you prefer 3 layers (note: 3-layer PCBs are less common and may have longer l
 
 ### Grid Settings
 
-Click **Setup** → **Grid Settings**:
+> **📍 Where to find:** Click **Setup** → **Grid Settings** from the menu bar
+
+Configure these values in the Grid Settings dialog:
 
 | Setting | Value | Use |
 |---------|-------|-----|
@@ -81,7 +176,9 @@ Click **Setup** → **Grid Settings**:
 
 ### Design Rules for JLCPCB 4-Layer
 
-Click **Setup** → **Design Rules**:
+> **📍 Where to find:** Click **Setup** → **Design Rules** from the menu bar
+
+Enter these values in the Design Rules dialog:
 
 | Rule | Value | Notes |
 |------|-------|-------|
@@ -94,7 +191,7 @@ Click **Setup** → **Design Rules**:
 
 ### Net Classes
 
-Click **Setup** → **Design Rules** → **Net Classes**:
+> **📍 Where to find:** Click **Setup** → **Design Rules** → **Net Classes** tab
 
 | Net Class | Track Width | Via Size | Clearance | Nets |
 |-----------|-------------|----------|-----------|------|
@@ -105,7 +202,7 @@ Click **Setup** → **Design Rules** → **Net Classes**:
 
 ---
 
-## Component Placement Strategy
+## 📍 Component Placement Strategy
 
 ### Placement Order for TechBot4
 
@@ -176,15 +273,19 @@ Place components in this sequence for optimal routing:
 
 ---
 
-## Ground Plane Configuration
+## ⚡ Ground Plane Configuration
 
 The ground plane is the most critical layer for TechBot4's performance.
 
 ### Creating the GND Plane on Layer 2
 
-1. Select **Layer 2 (Inner1)** in the Layer Manager
-2. Click **Place** → **Copper Area** (or `Shift+P`)
-3. Configure in the Properties panel:
+> **📍 Where to find:** Click **Place** → **Copper Area** (or press `Shift+P`)
+
+**Step-by-step instructions:**
+
+1. Select **Layer 2 (Inner1)** in the Layer Manager panel (usually on the right side)
+2. Go to **Place** → **Copper Area** (or press `Shift+P`)
+3. In the Properties panel, configure these settings:
 
 | Property | Value |
 |----------|-------|
@@ -211,13 +312,15 @@ The ground plane is the most critical layer for TechBot4's performance.
 
 ### ESP32 Antenna Keepout on GND Plane
 
+> **📍 Where to find:** Click **Place** → **Keepout Area**
+
 The ESP32 antenna requires NO copper underneath:
 
-1. On Layer 2 (GND plane), click **Place** → **Keepout Area**
+1. On Layer 2 (GND plane), go to **Place** → **Keepout Area**
 2. Draw a rectangle covering:
    - 15mm beyond the ESP32 antenna edge
    - Full width of antenna area (~8mm)
-3. Set properties:
+3. In the Properties panel, set:
    - **No Copper**: Enabled
    - **No Via**: Enabled
    - **No Track**: Enabled
@@ -235,15 +338,19 @@ ESP32 Module:
 
 ---
 
-## 3V3 Power Plane Configuration
+## 🔌 3V3 Power Plane Configuration
 
 A dedicated 3.3V plane provides clean power to all digital components.
 
 ### Creating the 3V3 Plane on Layer 3
 
-1. Select **Layer 3 (Inner2)** in the Layer Manager
-2. Click **Place** → **Copper Area**
-3. Configure:
+> **📍 Where to find:** Click **Place** → **Copper Area** (or press `Shift+P`)
+
+**Step-by-step instructions:**
+
+1. Select **Layer 3 (Inner2)** in the Layer Manager panel
+2. Go to **Place** → **Copper Area** (or press `Shift+P`)
+3. In the Properties panel, configure these settings:
 
 | Property | Value |
 |----------|-------|
@@ -303,7 +410,7 @@ Components connect to the 3V3 plane via vias:
 
 ---
 
-## Signal Routing
+## 🔀 Signal Routing
 
 With dedicated planes, signal routing becomes straightforward.
 
@@ -339,16 +446,18 @@ Secondary routing layer for vertical traces:
 
 ### USB Differential Pair Routing
 
+> **📍 Where to find:** Click **Route** → **Differential Pair Router**
+
 For proper USB signal integrity:
 
-1. Click **Route** → **Differential Pair Router** in EasyEDA Pro
+1. Go to **Route** → **Differential Pair Router** from the menu
 2. Select D+ and D- nets
-3. Configure:
+3. In the properties, configure:
    - Track width: 0.25mm
    - Gap: 0.15mm
    - Length matching: ±0.1mm
 4. Route directly from USB-C to CH340C (keep under 25mm)
-5. Use **Route** → **Length Tuning** if needed for matching
+5. If length matching is needed, use **Route** → **Length Tuning**
 
 ### SPI Bus Routing Priority
 
@@ -361,7 +470,7 @@ Route in this order:
 
 ---
 
-## Via Strategy
+## 🔩 Via Strategy
 
 Vias connect the signal layers (L1, L4) to the plane layers (L2, L3).
 
@@ -386,14 +495,18 @@ Place GND vias at these locations:
 
 ### Via Array for Ground Stitching
 
-1. Click **Place** → **Via Array** (Pro feature)
-2. Configure:
-   - Via: 0.5mm / 0.25mm
+> **📍 Where to find:** Click **Place** → **Via Array** (Pro feature)
+
+**Step-by-step instructions:**
+
+1. Go to **Place** → **Via Array** from the menu
+2. In the dialog, configure:
+   - Via size: 0.5mm outer / 0.25mm drill
    - Net: GND
    - Rows: 1
    - Columns: as needed
    - Spacing: 8-10mm
-3. Place along board perimeter
+3. Place the via array along the board perimeter
 
 ### Power Via Requirements
 
@@ -406,12 +519,16 @@ Place GND vias at these locations:
 
 ---
 
-## Design Rule Check and Manufacturing
+## ✅ Design Rule Check and Manufacturing
 
 ### Running DRC in EasyEDA Pro
 
-1. Click **Design** → **Check DRC** (or `Ctrl+D`)
-2. Review errors and warnings:
+> **📍 Where to find:** Click **Design** → **Check DRC** (or press `Ctrl+D`)
+
+**Step-by-step instructions:**
+
+1. Go to **Design** → **Check DRC** (or press `Ctrl+D`)
+2. Review errors and warnings in the DRC panel:
 
 | Error Type | Common Cause | Fix |
 |------------|--------------|-----|
@@ -436,8 +553,12 @@ Before generating Gerber files:
 
 ### Generating 4-Layer Gerber Files
 
-1. Click **Fabrication** → **PCB Fabrication File (Gerber)**
-2. Verify these layers are included:
+> **📍 Where to find:** Click **Fabrication** → **PCB Fabrication File (Gerber)**
+
+**Step-by-step instructions:**
+
+1. Go to **Fabrication** → **PCB Fabrication File (Gerber)** from the menu
+2. In the dialog, verify these layers are included:
 
 | File | Layer | Description |
 |------|-------|-------------|
@@ -470,7 +591,7 @@ When ordering from JLCPCB:
 
 ---
 
-## Quick Reference
+## ⌨️ Quick Reference
 
 ### Keyboard Shortcuts
 
