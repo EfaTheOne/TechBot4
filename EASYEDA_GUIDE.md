@@ -81,8 +81,8 @@ Use this section to quickly find any setting. All menu paths shown below.
 | Pour Type | Solid | Solid |
 | Thermal Relief | Enabled | Enabled |
 | Spoke Width | 0.3mm | 0.3mm |
-| Spoke Count | 4 | — |
-| Thermal Gap | 0.25mm | — |
+| Spoke Count | 4 | N/A |
+| Thermal Gap | 0.25mm | N/A |
 
 **Via Sizes:**
 | Via Type | Outer Diameter | Drill Size |
@@ -105,7 +105,7 @@ Use this section to quickly find any setting. All menu paths shown below.
 
 ---
 
-## 🔲 PCB Layer Stack Setup
+## 📚 PCB Layer Stack Setup
 
 ### Why 4-Layer for TechBot4
 
@@ -202,7 +202,7 @@ Enter these values in the Design Rules dialog:
 
 ---
 
-## 📍 Component Placement Strategy
+## 🧩 Component Placement Strategy
 
 ### Placement Order for TechBot4
 
