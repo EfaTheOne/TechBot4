@@ -55,3 +55,9 @@ Lithium Ion Polymer Battery - 3.7v 2500mAh | https://www.adafruit.com/product/32
 SeedStudio RF Anntena | Already have part
 
 3D Printed Case | Made with PETG for durablitly
+
+| X\Y  | PCB & PCBA | Switches | Display & Battery |
+|---|---|---|---|
+| Price Each | $108.30 | $16.06  | $62.17 |
+| Total price | $186.53 |   |   |
+
