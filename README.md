@@ -12,6 +12,11 @@ filiment I can use it to make a very durable case.
 
 ## Purpose
 I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. I also know that learning these skills using the TechBot4 wil be useful to possibly get an IT or engineering job in the future. The TechBot4 is such a cool project that I have been excited about and is the fourth version of the TechBot series.
+## Photos:
+
+<img width="907" height="708" alt="Screenshot 2026-01-06 171654" src="https://github.com/user-attachments/assets/bb756e21-975a-4cae-8431-01cffb4dd164" />
+<img width="764" height="755" alt="Screenshot 2026-01-06 171722" src="https://github.com/user-attachments/assets/76d20f35-929d-4f3b-8b6a-1f531321ff4a" />
+<img width="327" height="548" alt="image" src="https://github.com/user-attachments/assets/4928c0a6-a118-48f1-865f-bb58d687094c" />
 
 ## Checked Source Parts:
 ### PCBA Parts:</br>
