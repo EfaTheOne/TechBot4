@@ -11,8 +11,7 @@ some ground planes which i've recently been learning about. Then the 3D model, I
 filiment I can use it to make a very durable case. 
 
 ## Purpose
-I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. The TechBot4 is such a cool project that I have been excited about 
-and is the fourth version of the TechBot series.
+I am an avid learner in the IT world and want to know how to use tools to help secure networks and privacy now that AI has such a big influence. I also know that learning these skills using the TechBot4 wil be useful to possibly get an IT or engineering job in the future. The TechBot4 is such a cool project that I have been excited about and is the fourth version of the TechBot series.
 
 ## Checked Source Parts:
 ### PCBA Parts:</br>
