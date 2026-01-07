@@ -6,7 +6,7 @@ PCB & PCBA for only Bottom of PCB to save money</br>
 This includes all the parts except switches which I will attempt to solder myself. (Cost: $108.30)</br>
 
 ### First Order:</br>
-Switches from robotshop, the only ones I could find that work with my PCB, saves about $14 by soldering myself.</br>
+Switches from robotshop, the only ones I could find that work with my PCB, saves about $10 by soldering myself.</br>
 <img width="548" height="386" alt="Screenshot 2026-01-06 201715" src="https://github.com/user-attachments/assets/03e29620-4fd6-4e20-9544-870150deea46" /></br>
 This includes 7 Switches that are 6mm (not perfect but I can make them work). (Cost: $16.06)</br>
 
